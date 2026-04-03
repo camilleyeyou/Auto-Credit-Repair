@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-04-03T15:42:47.696Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-04-03T15:53:45.897Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 9
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 02 (pdf-upload-parsing) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: 2 of 5
 | Phase 01 P03 | 3 minutes | 2 tasks | 5 files |
 | Phase 01 P04 | 3 | 2 tasks | 1 files |
 | Phase 02 P01 | 6 | 2 tasks | 2 files |
+| Phase 02 P02 | 12 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [Phase 02]: parseReport action uses ctx.auth.getUserIdentity() consistent with action runtime; internal helpers access DB directly via ctx.db
 - [Phase 02]: image_only status handled in Convex action (not FastAPI) so record immediately reflects scan-only state for reactive UI
 - [Phase 02]: FASTAPI_URL guard throws inside try/catch so outer catch sets failed status — prevents record stuck in parsing state
+- [Phase 02]: ImageOnlyPDFError returns structured JSON (parse_status=image_only) not HTTP 4xx — Convex action needs clean status field to handle gracefully
+- [Phase 02]: Stub adapters created for all 3 bureaus in Plan 02 so get_parser() works before Plan 03 implements real extraction
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:42:47.691Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-04-03T15:53:45.893Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None

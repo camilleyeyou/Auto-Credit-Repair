@@ -44,11 +44,11 @@ Plans:
   2. Upload page shows distinct progress states (uploading → parsing → done) for each file
   3. A text-only PDF from annualcreditreport.com is parsed into structured tradeline and negative item data normalized across all three bureau formats
   4. An image-only (scanned) PDF triggers a visible warning telling the user it cannot be processed
-**Plans:** 1/5 plans executed
+**Plans:** 2/5 plans executed
 
 Plans:
 - [x] 02-01-PLAN.md — Convex schema extension (credit_reports table) and all Convex functions
-- [ ] 02-02-PLAN.md — FastAPI ParsedReport models, BureauParser base class, stub adapters, reports router
+- [x] 02-02-PLAN.md — FastAPI ParsedReport models, BureauParser base class, stub adapters, reports router
 - [ ] 02-03-PLAN.md — Bureau parser adapters: Experian, Equifax (pdfplumber fallback), TransUnion
 - [ ] 02-04-PLAN.md — Upload page UI with three bureau drop zones and progress state machine
 - [ ] 02-05-PLAN.md — Integration smoke tests and human verification checkpoint
@@ -97,7 +97,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete   | 2026-04-03 |
-| 2. PDF Upload & Parsing | 1/5 | In Progress|  |
+| 2. PDF Upload & Parsing | 2/5 | In Progress|  |
 | 3. AI Analysis & Dispute Review | 0/? | Not started | - |
 | 4. Letter Generation | 0/? | Not started | - |
 | 5. Tracking & Dashboard | 0/? | Not started | - |
