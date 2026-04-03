@@ -37,7 +37,7 @@ Anyone can dispute inaccurate credit report items for free under FCRA — this t
 - Automatic letter mailing — user always sends herself (intentional constraint)
 - Full SSN or complete account number storage — only last 4 digits (security)
 - Multi-tenancy, team features, or billing — single user system
-- OAuth/social login — email/password via Supabase Auth is sufficient
+- OAuth/social login — email/password via Convex Auth is sufficient
 - Mobile app — web-first
 - Real-time chat or messaging features — not relevant to the workflow
 - Guaranteed removal language — AI must always use hedged language per FCRA ethics
@@ -53,7 +53,7 @@ Anyone can dispute inaccurate credit report items for free under FCRA — this t
 
 ## Constraints
 
-- **Tech stack**: Next.js 15 (App Router) + FastAPI (Python 3.11+) + Supabase + Claude API — already decided
+- **Tech stack**: Next.js 15 (App Router) + Convex (DB, Auth, Storage, real-time) + FastAPI (PDF parsing, Claude API) — decided during initialization
 - **AI model**: claude-sonnet-4-20250514 for analysis and letter generation
 - **PDF parsing**: PyMuPDF (fitz) primary, pdfplumber fallback
 - **Deployment**: Frontend → Vercel, Backend → Railway
@@ -65,7 +65,8 @@ Anyone can dispute inaccurate credit report items for free under FCRA — this t
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Separate frontend/backend (Next.js + FastAPI) | Python ecosystem better for PDF parsing + AI; Next.js better for UI | — Pending |
-| Supabase for DB + Auth + Storage | All-in-one platform, generous free tier, handles auth and file storage | — Pending |
+| Convex for DB + Auth + Storage | Reactive backend, real-time sync, built-in file storage, replaces Supabase | — Pending |
+| Convex + FastAPI split | Convex handles DB/auth/storage/real-time; FastAPI handles PDF parsing + Claude API (Python ecosystem) | — Pending |
 | PDF download format for letters | Professional, print-ready output; user prints and signs | — Pending |
 | Profile page for user info | Entered once, reused across all letters; cleaner than per-letter entry | — Pending |
 | Email + dashboard reminders | Email ensures she doesn't miss deadlines even if she doesn't log in daily | — Pending |
