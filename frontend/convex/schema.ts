@@ -20,4 +20,27 @@ export default defineSchema({
     state: v.optional(v.string()),
     zip: v.optional(v.string()),
   }).index("email", ["email"]),
+  credit_reports: defineTable({
+    userId: v.string(),
+    bureau: v.union(
+      v.literal("experian"),
+      v.literal("equifax"),
+      v.literal("transunion")
+    ),
+    storageId: v.id("_storage"),
+    uploadedAt: v.number(),
+    parseStatus: v.union(
+      v.literal("uploaded"),
+      v.literal("parsing"),
+      v.literal("done"),
+      v.literal("failed"),
+      v.literal("image_only"),
+    ),
+    parsedData: v.optional(v.any()),      // structured ParsedReport JSON (D-22)
+    rawText: v.optional(v.string()),       // raw text for debugging (D-22)
+    errorMessage: v.optional(v.string()),  // set on failed or image_only
+    confidence: v.optional(v.number()),    // 0.0–1.0 parser confidence (D-25)
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_bureau", ["userId", "bureau"]),
 });
