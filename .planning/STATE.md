@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 01-02-PLAN.md — awaiting Convex project init (npx convex dev --once)
-last_updated: "2026-04-03T14:12:31.179Z"
+stopped_at: Completed 01-03-PLAN.md — FastAPI stub, Dockerfile, and frontend API client
+last_updated: "2026-04-03T14:12:45.199Z"
 progress:
   total_phases: 5
   completed_phases: 0
@@ -64,6 +64,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Convex project initialization requires human action (npx convex dev --once for browser OAuth) — all code wired, .env.local pending
 - [Phase 01]: defaultValue used (not value) for profile form inputs — prevents re-render mid-typing while seeding from Convex reactive query
 - [Phase 01]: TypeScript build blocked by missing convex/_generated/server — expected until npx convex dev --once completes (Convex cloud init auth gate)
+- [Phase 01]: Dockerfile CMD uses shell form (sh -c) for Railway $PORT env expansion — exec form does not expand env vars at runtime
+- [Phase 01]: apiFetch exported as generic function apiFetch<T> for TypeScript type safety at call sites
 
 ### Pending Todos
 
@@ -76,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T14:12:17.164Z
-Stopped at: Completed 01-02-PLAN.md — awaiting Convex project init (npx convex dev --once)
+Last session: 2026-04-03T14:12:45.194Z
+Stopped at: Completed 01-03-PLAN.md — FastAPI stub, Dockerfile, and frontend API client
 Resume file: None
