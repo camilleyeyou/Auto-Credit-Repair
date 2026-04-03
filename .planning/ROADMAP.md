@@ -25,7 +25,14 @@
   2. User can log out and log back in; session survives a browser refresh without re-entering credentials
   3. User can fill out a profile page (full name, mailing address) and see saved values on return visits
   4. Next.js frontend and FastAPI backend are connected, Convex schema is initialized, and Vercel + Railway deployments are live
-**Plans**: TBD
+**Plans:** 1/4 plans executed
+
+Plans:
+- [x] 01-01-PLAN.md — Monorepo scaffold, Convex init, auth config, middleware, provider wiring
+- [ ] 01-02-PLAN.md — Sign-in/sign-up form, profile page, Convex user functions
+- [ ] 01-03-PLAN.md — FastAPI stub with health check, CORS, Dockerfile, frontend API client
+- [ ] 01-04-PLAN.md — Vercel + Railway deployments, end-to-end validation
+
 **UI hint**: yes
 
 ### Phase 2: PDF Upload & Parsing
@@ -81,7 +88,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 1/4 | In Progress|  |
 | 2. PDF Upload & Parsing | 0/? | Not started | - |
 | 3. AI Analysis & Dispute Review | 0/? | Not started | - |
 | 4. Letter Generation | 0/? | Not started | - |
@@ -89,4 +96,4 @@
 
 ---
 *Roadmap created: 2026-04-03*
-*Last updated: 2026-04-03 after initial creation*
+*Last updated: 2026-04-03 — Phase 1 planned (4 plans, 3 waves)*

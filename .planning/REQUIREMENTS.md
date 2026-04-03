@@ -9,8 +9,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Authentication & Profile
 
-- [ ] **AUTH-01**: User can sign up and log in with email and password via Convex Auth
-- [ ] **AUTH-02**: User session persists across browser refresh
+- [x] **AUTH-01**: User can sign up and log in with email and password via Convex Auth
+- [x] **AUTH-02**: User session persists across browser refresh
 - [ ] **AUTH-03**: User can create and edit a profile with full name and mailing address
 
 ### PDF Upload & Parsing
@@ -96,8 +96,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Pending |
 | PDF-01 | Phase 2 | Pending |
 | PDF-02 | Phase 2 | Pending |

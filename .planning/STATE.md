@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 01
-stopped_at: Phase 1 plans created
-last_updated: "2026-04-03T13:52:51.620Z"
+status: Ready to execute
+stopped_at: Completed 01-01-PLAN.md — awaiting Convex project init (npx convex dev --once)
+last_updated: "2026-04-03T14:06:02.435Z"
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 01 (foundation) — EXECUTING
-Plan: 1 of 4
+Plan: 2 of 4
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Plan: 1 of 4
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01 P01 | 10 | 3 tasks | 31 files |
 
 ## Accumulated Context
 
@@ -57,6 +58,8 @@ Recent decisions affecting current work:
 - Init: Convex replaces Supabase for DB, Auth, and Storage; FastAPI retained for PDF parsing and Claude API calls
 - Init: Granularity set to coarse — 5 phases covering all 29 v1 requirements
 - Init: Email reminders (NOTF-01, NOTF-02) and escalation (ESC-01 through ESC-04) deferred to v2
+- [Phase 01]: @auth/core pinned to 0.37.0 (actual peer dep of @convex-dev/auth@0.0.91) not 0.34.3 as noted in research
+- [Phase 01]: Convex project initialization requires human action (npx convex dev --once for browser OAuth) — all code wired, .env.local pending
 
 ### Pending Todos
 
@@ -69,6 +72,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T13:51:32.742Z
-Stopped at: Phase 1 plans created
-Resume file: .planning/phases/01-foundation/01-01-PLAN.md
+Last session: 2026-04-03T14:06:02.430Z
+Stopped at: Completed 01-01-PLAN.md — awaiting Convex project init (npx convex dev --once)
+Resume file: None
