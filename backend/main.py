@@ -25,6 +25,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from routers.reports import router as reports_router
+app.include_router(reports_router)
+
 
 @app.get("/api/health")
 def health_check():
