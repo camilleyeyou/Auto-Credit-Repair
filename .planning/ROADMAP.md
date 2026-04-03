@@ -1,0 +1,92 @@
+# CreditFix Roadmap
+
+**Project:** CreditFix
+**Created:** 2026-04-03
+**Granularity:** Coarse
+**Total v1 requirements:** 29
+**Milestone:** M1 (Initial Release)
+
+## Phases
+
+- [ ] **Phase 1: Foundation** - Project scaffold, Convex auth, and user profile
+- [ ] **Phase 2: PDF Upload & Parsing** - Upload UI, bureau-specific parsers, normalized output
+- [ ] **Phase 3: AI Analysis & Dispute Review** - Claude integration, FCRA citations, dispute approval UI
+- [ ] **Phase 4: Letter Generation** - Personalized dispute letters downloaded as print-ready PDFs
+- [ ] **Phase 5: Tracking & Dashboard** - 30-day deadline tracker, status timeline, summary dashboard
+
+## Phase Details
+
+### Phase 1: Foundation
+**Goal**: User can securely access the app and store their personal information for use in letters
+**Depends on**: Nothing
+**Requirements**: AUTH-01, AUTH-02, AUTH-03
+**Success Criteria** (what must be TRUE):
+  1. User can create an account with email and password and land on a home screen
+  2. User can log out and log back in; session survives a browser refresh without re-entering credentials
+  3. User can fill out a profile page (full name, mailing address) and see saved values on return visits
+  4. Next.js frontend and FastAPI backend are connected, Convex schema is initialized, and Vercel + Railway deployments are live
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 2: PDF Upload & Parsing
+**Goal**: User can upload all three bureau credit report PDFs and the system produces clean, structured data ready for AI analysis
+**Depends on**: Phase 1
+**Requirements**: PDF-01, PDF-02, PDF-03, PDF-04, PDF-05
+**Success Criteria** (what must be TRUE):
+  1. User can upload a PDF for each of the three bureaus (Experian, Equifax, TransUnion) from the upload page
+  2. Upload page shows distinct progress states (uploading → parsing → done) for each file
+  3. A text-only PDF from annualcreditreport.com is parsed into structured tradeline and negative item data normalized across all three bureau formats
+  4. An image-only (scanned) PDF triggers a visible warning telling the user it cannot be processed
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 3: AI Analysis & Dispute Review
+**Goal**: User can see every AI-identified disputable item with its FCRA basis, then approve or skip each one before any letter is created
+**Depends on**: Phase 2
+**Requirements**: AI-01, AI-02, AI-03, AI-04, AI-05, DISP-01, DISP-02, DISP-03
+**Success Criteria** (what must be TRUE):
+  1. After a report is parsed, the system automatically identifies disputable items and each item shows a specific FCRA section citation (e.g., § 611, § 623)
+  2. Every FCRA citation in an identified item matches a section in the hardcoded validated citation library — no hallucinated statute numbers reach the UI
+  3. No SSNs or full account numbers are present in data sent to the Claude API
+  4. User can view flagged items grouped by bureau and approve or skip each one individually
+  5. Approved items enter a tracked lifecycle (pending_review → approved) visible in the dispute list
+**Plans**: TBD
+
+### Phase 4: Letter Generation
+**Goal**: User can download a print-ready, bureau-addressed dispute letter for every approved dispute item, pre-filled with their personal information
+**Depends on**: Phase 3
+**Requirements**: LTR-01, LTR-02, LTR-03, LTR-04, LTR-05, LTR-06
+**Success Criteria** (what must be TRUE):
+  1. For each approved dispute item, a letter is generated addressed to the correct bureau mailing address (Experian, Equifax, or TransUnion)
+  2. Each letter is automatically filled with the user's name and mailing address from their profile
+  3. Each letter cites the specific FCRA section, references the specific account or item being disputed, and includes a signature line with enclosure notes
+  4. The user can download a letter as a PDF that is formatted and readable when printed on standard paper
+  5. Letter body language is personalized per dispute item — two different dispute items do not produce identical letter text
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 5: Tracking & Dashboard
+**Goal**: User can track the status and 30-day deadline for every sent dispute and see a full summary of their repair progress from one screen
+**Depends on**: Phase 4
+**Requirements**: TRK-01, TRK-02, TRK-03, TRK-04, DASH-01, DASH-02, DASH-03
+**Success Criteria** (what must be TRUE):
+  1. User can mark a letter as sent, enter a certified mail tracking number, and see the 30-day response deadline calculated from that send date
+  2. Tracker page shows each dispute on a visual timeline with color-coded status (pending, sent, waiting, overdue, resolved, denied)
+  3. Disputes past their 30-day window with no recorded response are visually flagged as overdue on both the tracker and dashboard
+  4. Dashboard shows summary cards (total disputes, letters sent, responses received, resolved count), upcoming deadlines, and quick action buttons to start common workflows
+**Plans**: TBD
+**UI hint**: yes
+
+## Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Foundation | 0/? | Not started | - |
+| 2. PDF Upload & Parsing | 0/? | Not started | - |
+| 3. AI Analysis & Dispute Review | 0/? | Not started | - |
+| 4. Letter Generation | 0/? | Not started | - |
+| 5. Tracking & Dashboard | 0/? | Not started | - |
+
+---
+*Roadmap created: 2026-04-03*
+*Last updated: 2026-04-03 after initial creation*
