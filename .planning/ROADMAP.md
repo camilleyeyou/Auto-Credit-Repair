@@ -49,8 +49,8 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Convex schema extension (credit_reports table) and all Convex functions
 - [x] 02-02-PLAN.md — FastAPI ParsedReport models, BureauParser base class, stub adapters, reports router
-- [ ] 02-03-PLAN.md — Bureau parser adapters: Experian, Equifax (pdfplumber fallback), TransUnion
-- [ ] 02-04-PLAN.md — Upload page UI with three bureau drop zones and progress state machine
+- [x] 02-03-PLAN.md — Bureau parser adapters: Experian, Equifax (pdfplumber fallback), TransUnion
+- [x] 02-04-PLAN.md — Upload page UI with three bureau drop zones and progress state machine
 - [ ] 02-05-PLAN.md — Integration smoke tests and human verification checkpoint
 
 **UI hint**: yes
