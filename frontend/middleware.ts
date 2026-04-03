@@ -7,6 +7,7 @@ import {
 const isSignInPage = createRouteMatcher(["/signin"]);
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
+  "/upload(.*)",
   "/profile(.*)",
 ]);
 
