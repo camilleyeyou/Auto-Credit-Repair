@@ -15,11 +15,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### PDF Upload & Parsing
 
-- [ ] **PDF-01**: User can upload credit report PDFs for each bureau (Experian, Equifax, TransUnion)
+- [x] **PDF-01**: User can upload credit report PDFs for each bureau (Experian, Equifax, TransUnion)
 - [ ] **PDF-02**: System parses uploaded PDFs using PyMuPDF with bureau-specific adapters
-- [ ] **PDF-03**: Parser normalizes output into a common structured format across all three bureaus
-- [ ] **PDF-04**: Upload page shows progress indicators (uploading → parsing → done)
-- [ ] **PDF-05**: System detects image-only PDFs and warns user (no OCR support)
+- [x] **PDF-03**: Parser normalizes output into a common structured format across all three bureaus
+- [x] **PDF-04**: Upload page shows progress indicators (uploading → parsing → done)
+- [x] **PDF-05**: System detects image-only PDFs and warns user (no OCR support)
 
 ### AI Analysis
 
@@ -99,11 +99,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
-| PDF-01 | Phase 2 | Pending |
+| PDF-01 | Phase 2 | Complete |
 | PDF-02 | Phase 2 | Pending |
-| PDF-03 | Phase 2 | Pending |
-| PDF-04 | Phase 2 | Pending |
-| PDF-05 | Phase 2 | Pending |
+| PDF-03 | Phase 2 | Complete |
+| PDF-04 | Phase 2 | Complete |
+| PDF-05 | Phase 2 | Complete |
 | AI-01 | Phase 3 | Pending |
 | AI-02 | Phase 3 | Pending |
 | AI-03 | Phase 3 | Pending |

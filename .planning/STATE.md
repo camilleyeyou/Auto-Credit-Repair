@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 02
-stopped_at: Phase 2 plans created and verified
-last_updated: "2026-04-03T15:38:55.952Z"
+status: Ready to execute
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-04-03T15:42:47.696Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 9
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 02 (pdf-upload-parsing) — EXECUTING
-Plan: 1 of 5
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Plan: 1 of 5
 | Phase 01 P02 | 15 | 3 tasks | 8 files |
 | Phase 01 P03 | 3 minutes | 2 tasks | 5 files |
 | Phase 01 P04 | 3 | 2 tasks | 1 files |
+| Phase 02 P01 | 6 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,9 @@ Recent decisions affecting current work:
 - [Phase 01]: Proxy path /api/backend/* not /api/* to avoid collision with Next.js API routes
 - [Phase 01]: Vercel build command must include npx convex deploy --cmd 'next build' (CONVEX_DEPLOY_KEY required) to prevent Pitfall 6
 - [Phase 01]: Railway FRONTEND_URL must be updated to Vercel production URL after both services are live to resolve CORS Pitfall 5
+- [Phase 02]: parseReport action uses ctx.auth.getUserIdentity() consistent with action runtime; internal helpers access DB directly via ctx.db
+- [Phase 02]: image_only status handled in Convex action (not FastAPI) so record immediately reflects scan-only state for reactive UI
+- [Phase 02]: FASTAPI_URL guard throws inside try/catch so outer catch sets failed status — prevents record stuck in parsing state
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:35:57.740Z
-Stopped at: Phase 2 plans created and verified
-Resume file: .planning/phases/02-pdf-upload-parsing/02-01-PLAN.md
+Last session: 2026-04-03T15:42:47.691Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None
