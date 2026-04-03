@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-stopped_at: Completed 01-03-PLAN.md — FastAPI stub, Dockerfile, and frontend API client
-last_updated: "2026-04-03T14:12:45.199Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 01-04-PLAN.md — Vercel/Railway deployment config and proxy rewrites
+last_updated: "2026-04-03T14:25:59.470Z"
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -49,6 +49,7 @@ Plan: 4 of 4
 | Phase 01 P01 | 10 | 3 tasks | 31 files |
 | Phase 01 P02 | 15 | 3 tasks | 8 files |
 | Phase 01 P03 | 3 minutes | 2 tasks | 5 files |
+| Phase 01 P04 | 3 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Recent decisions affecting current work:
 - [Phase 01]: TypeScript build blocked by missing convex/_generated/server — expected until npx convex dev --once completes (Convex cloud init auth gate)
 - [Phase 01]: Dockerfile CMD uses shell form (sh -c) for Railway $PORT env expansion — exec form does not expand env vars at runtime
 - [Phase 01]: apiFetch exported as generic function apiFetch<T> for TypeScript type safety at call sites
+- [Phase 01]: Proxy path /api/backend/* not /api/* to avoid collision with Next.js API routes
+- [Phase 01]: Vercel build command must include npx convex deploy --cmd 'next build' (CONVEX_DEPLOY_KEY required) to prevent Pitfall 6
+- [Phase 01]: Railway FRONTEND_URL must be updated to Vercel production URL after both services are live to resolve CORS Pitfall 5
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T14:12:45.194Z
-Stopped at: Completed 01-03-PLAN.md — FastAPI stub, Dockerfile, and frontend API client
+Last session: 2026-04-03T14:25:59.464Z
+Stopped at: Completed 01-04-PLAN.md — Vercel/Railway deployment config and proxy rewrites
 Resume file: None
