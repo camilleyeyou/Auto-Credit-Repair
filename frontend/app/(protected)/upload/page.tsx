@@ -25,6 +25,21 @@ import {
   type LocalStatus,
 } from "@/components/upload/BureauDropZone";
 
+/** Shape of a credit_reports document as returned by listByUser. */
+interface CreditReport {
+  _id: Id<"credit_reports">;
+  _creationTime: number;
+  userId: string;
+  bureau: Bureau;
+  storageId: Id<"_storage">;
+  uploadedAt: number;
+  parseStatus: "uploaded" | "parsing" | "done" | "failed" | "image_only";
+  parsedData?: unknown;
+  rawText?: string;
+  errorMessage?: string;
+  confidence?: number;
+}
+
 const BUREAUS: Bureau[] = ["experian", "equifax", "transunion"];
 
 export default function UploadPage() {
@@ -45,9 +60,9 @@ export default function UploadPage() {
     setLocalStatuses((prev) => {
       const updated = { ...prev };
       for (const bureau of BUREAUS) {
-        const bureauReports = reports
-          .filter((r) => r.bureau === bureau)
-          .sort((a, b) => b.uploadedAt - a.uploadedAt);
+        const bureauReports = (reports as CreditReport[])
+          .filter((r: CreditReport) => r.bureau === bureau)
+          .sort((a: CreditReport, b: CreditReport) => b.uploadedAt - a.uploadedAt);
         const latest = bureauReports[0];
         if (!latest) continue;
 
@@ -95,19 +110,19 @@ export default function UploadPage() {
     [generateUploadUrl, saveReport, parseReport]
   );
 
-  const latestByBureau = BUREAUS.reduce<Record<Bureau, (typeof reports extends undefined ? never : NonNullable<typeof reports>[0]) | undefined>>(
+  const latestByBureau = BUREAUS.reduce<Record<Bureau, CreditReport | undefined>>(
     (acc, bureau) => {
       if (!reports) {
         acc[bureau] = undefined;
         return acc;
       }
-      const sorted = reports
-        .filter((r) => r.bureau === bureau)
-        .sort((a, b) => b.uploadedAt - a.uploadedAt);
+      const sorted = (reports as CreditReport[])
+        .filter((r: CreditReport) => r.bureau === bureau)
+        .sort((a: CreditReport, b: CreditReport) => b.uploadedAt - a.uploadedAt);
       acc[bureau] = sorted[0];
       return acc;
     },
-    {} as Record<Bureau, undefined>
+    {} as Record<Bureau, CreditReport | undefined>
   );
 
   return (
@@ -150,11 +165,11 @@ export default function UploadPage() {
         ))}
       </div>
 
-      {reports && reports.some((r) => r.parseStatus === "done") && (
+      {reports && (reports as CreditReport[]).some((r: CreditReport) => r.parseStatus === "done") && (
         <div className="mt-8 rounded-lg border border-green-200 bg-green-50 p-4">
           <p className="text-sm font-medium text-green-800">
-            {reports.filter((r) => r.parseStatus === "done").length} report
-            {reports.filter((r) => r.parseStatus === "done").length !== 1 ? "s" : ""} parsed
+            {(reports as CreditReport[]).filter((r: CreditReport) => r.parseStatus === "done").length} report
+            {(reports as CreditReport[]).filter((r: CreditReport) => r.parseStatus === "done").length !== 1 ? "s" : ""} parsed
             and ready for AI analysis.
           </p>
           <p className="mt-1 text-xs text-green-700">
