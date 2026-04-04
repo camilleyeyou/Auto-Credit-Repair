@@ -1,4 +1,4 @@
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -137,4 +137,13 @@ export const listByReport = query({
       .order("asc")
       .collect();
   },
+});
+
+/**
+ * Internal query: fetch a single dispute_items record by ID.
+ * Used by generateDemandLetter, generateEscalationLetter, and generateCfpbNarrative actions.
+ */
+export const getItem = internalQuery({
+  args: { id: v.id("dispute_items") },
+  handler: async (ctx, args) => ctx.db.get(args.id),
 });

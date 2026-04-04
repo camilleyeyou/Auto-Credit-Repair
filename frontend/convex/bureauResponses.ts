@@ -265,3 +265,202 @@ export const parseResponse = action({
     });
   },
 });
+
+/**
+ * Public action: generate a demand letter for a dispute item with no response after 30+ days.
+ * ESC-01 — calls FastAPI /api/letters/generate with letter_type="demand".
+ * 
+ * Args:
+ * - disputeItemId: the dispute item that was sent but not responded to
+ * - letterId: the original dispute letter (provides sentAt date for context)
+ */
+export const generateDemandLetter = action({
+  args: {
+    disputeItemId: v.id("dispute_items"),
+    letterId:      v.id("dispute_letters"),
+  },
+  handler: async (ctx, args) => {
+    // 1. Auth check
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    // 2. FASTAPI_URL env guard
+    const fastapiUrl = process.env.FASTAPI_URL;
+    if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+    // 3. Fetch dispute item
+    const disputeItem = await ctx.runQuery(internal.disputeItems.getItem, {
+      id: args.disputeItemId,
+    });
+    if (!disputeItem) throw new Error("Dispute item not found");
+    if (disputeItem.userId !== identity.subject) {
+      throw new Error("Unauthorized: you do not own this dispute item");
+    }
+
+    // 4. Fetch user profile (letter header fields)
+    const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
+      userId: identity.subject,
+    });
+    if (
+      !userProfile?.fullName ||
+      !userProfile?.streetAddress ||
+      !userProfile?.city ||
+      !userProfile?.state ||
+      !userProfile?.zip
+    ) {
+      throw new Error(
+        "Profile incomplete — add your name and mailing address in Profile before generating letters",
+      );
+    }
+
+    // 5. Fetch original letter for sentAt date
+    const originalLetter = await ctx.runQuery(internal.letters.getLetterById, {
+      id: args.letterId,
+    });
+
+    // 6. POST to FastAPI letter generation endpoint with letter_type="demand"
+    const letterRequest = {
+      bureau:               disputeItem.bureau,
+      creditor_name:        disputeItem.creditorName,
+      account_number_last4: disputeItem.accountNumberLast4 ?? undefined,
+      dispute_reason:       disputeItem.disputeReason,
+      fcra_section:         disputeItem.fcraSection,
+      fcra_section_title:   disputeItem.fcraSectionTitle,
+      full_name:            userProfile.fullName,
+      street_address:       userProfile.streetAddress,
+      city:                 userProfile.city,
+      state:                userProfile.state,
+      zip_code:             userProfile.zip,
+      letter_type:          "demand" as const,
+      original_sent_date:   originalLetter?.sentAt
+        ? new Date(originalLetter.sentAt).toISOString()
+        : undefined,
+    };
+
+    const response = await fetch(`${fastapiUrl}/api/letters/generate`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(letterRequest),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+    }
+
+    // 7. Decode PDF and store in Convex Storage
+    const result = await response.json() as { letter_html: string; pdf_base64: string };
+    const pdfBytes = Uint8Array.from(atob(result.pdf_base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const storageId = await ctx.storage.store(blob);
+
+    // 8. Save letter with letterType="demand"
+    await ctx.runMutation(internal.letters.saveLetter, {
+      disputeItemId: args.disputeItemId,
+      userId:        identity.subject,
+      bureau:        disputeItem.bureau,
+      letterContent: result.letter_html,
+      storageId,
+      letterType:    "demand",
+    });
+  },
+});
+
+/**
+ * Public action: generate an escalation letter for a dispute item that was verified/denied.
+ * ESC-02 — calls FastAPI /api/letters/generate with letter_type="escalation".
+ *
+ * Args:
+ * - disputeItemId: the dispute item with outcome "verified" (bureau denied removal)
+ * - bureauResponseId: the bureau response record (provides outcome/reasonCode context)
+ */
+export const generateEscalationLetter = action({
+  args: {
+    disputeItemId:    v.id("dispute_items"),
+    bureauResponseId: v.id("bureau_responses"),
+  },
+  handler: async (ctx, args) => {
+    // 1. Auth check
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    // 2. FASTAPI_URL env guard
+    const fastapiUrl = process.env.FASTAPI_URL;
+    if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+    // 3. Fetch dispute item
+    const disputeItem = await ctx.runQuery(internal.disputeItems.getItem, {
+      id: args.disputeItemId,
+    });
+    if (!disputeItem) throw new Error("Dispute item not found");
+    if (disputeItem.userId !== identity.subject) {
+      throw new Error("Unauthorized: you do not own this dispute item");
+    }
+
+    // 4. Fetch user profile (letter header fields)
+    const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
+      userId: identity.subject,
+    });
+    if (
+      !userProfile?.fullName ||
+      !userProfile?.streetAddress ||
+      !userProfile?.city ||
+      !userProfile?.state ||
+      !userProfile?.zip
+    ) {
+      throw new Error(
+        "Profile incomplete — add your name and mailing address in Profile before generating letters",
+      );
+    }
+
+    // 5. Fetch bureau response (outcome context for escalation)
+    const bureauResponse = await ctx.runQuery(internal.bureauResponses.getResponseById, {
+      id: args.bureauResponseId,
+    });
+    if (!bureauResponse) throw new Error("Bureau response not found");
+
+    // 6. POST to FastAPI letter generation endpoint with letter_type="escalation"
+    const letterRequest = {
+      bureau:                disputeItem.bureau,
+      creditor_name:         disputeItem.creditorName,
+      account_number_last4:  disputeItem.accountNumberLast4 ?? undefined,
+      dispute_reason:        disputeItem.disputeReason,
+      fcra_section:          disputeItem.fcraSection,
+      fcra_section_title:    disputeItem.fcraSectionTitle,
+      full_name:             userProfile.fullName,
+      street_address:        userProfile.streetAddress,
+      city:                  userProfile.city,
+      state:                 userProfile.state,
+      zip_code:              userProfile.zip,
+      letter_type:           "escalation" as const,
+      bureau_outcome_summary: bureauResponse.reasonCode ?? bureauResponse.outcome,
+    };
+
+    const response = await fetch(`${fastapiUrl}/api/letters/generate`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(letterRequest),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+    }
+
+    // 7. Decode PDF and store in Convex Storage
+    const result = await response.json() as { letter_html: string; pdf_base64: string };
+    const pdfBytes = Uint8Array.from(atob(result.pdf_base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const storageId = await ctx.storage.store(blob);
+
+    // 8. Save letter with letterType="escalation"
+    await ctx.runMutation(internal.letters.saveLetter, {
+      disputeItemId: args.disputeItemId,
+      userId:        identity.subject,
+      bureau:        disputeItem.bureau,
+      letterContent: result.letter_html,
+      storageId,
+      letterType:    "escalation",
+    });
+  },
+});

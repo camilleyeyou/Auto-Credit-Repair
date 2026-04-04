@@ -24,6 +24,15 @@ export const getUserProfile = internalQuery({
 });
 
 /**
+ * Internal query: fetch a single dispute_letters record by ID.
+ * Used by generateDemandLetter to retrieve the original letter's sentAt date.
+ */
+export const getLetterById = internalQuery({
+  args: { id: v.id("dispute_letters") },
+  handler: async (ctx, args) => ctx.db.get(args.id),
+});
+
+/**
  * Internal query: fetch all approved dispute items for the user that
  * do not yet have a corresponding dispute_letters record (D-27 idempotency).
  */
@@ -68,6 +77,11 @@ export const saveLetter = internalMutation({
     ),
     letterContent: v.string(),
     storageId:     v.id("_storage"),
+    letterType:    v.optional(v.union(
+      v.literal("initial"),
+      v.literal("demand"),
+      v.literal("escalation"),
+    )),
   },
   handler: async (ctx, args) => {
     await ctx.db.insert("dispute_letters", {
@@ -77,6 +91,7 @@ export const saveLetter = internalMutation({
       letterContent: args.letterContent,
       storageId:     args.storageId,
       generatedAt:   Date.now(),
+      letterType:    args.letterType,
     });
   },
 });
