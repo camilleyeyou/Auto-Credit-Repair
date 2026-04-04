@@ -219,6 +219,110 @@ export const setAnalysisStatus = internalMutation({
 });
 
 /**
+ * Public action: orchestrates the full AI analysis pipeline.
+ * 1. Gets the parsed report (internal query)
+ * 2. Guards: only analyze reports with parseStatus === "done"
+ * 3. Guards: skip if analysisStatus is already "analyzed" (idempotency — per D-28, Pitfall 4)
+ * 4. Marks report as "analyzing"
+ * 5. Calls FastAPI POST /api/reports/{reportId}/analyze
+ * 6. Stores returned dispute items via saveDisputeItems
+ * 7. Marks report as "analyzed"
+ * Outer catch sets "analysis_failed" with errorMessage — report never stuck.
+ */
+export const analyzeReport = action({
+  args: { reportId: v.id("credit_reports") },
+  handler: async (ctx, args) => {
+    // 1. Fetch report
+    const report = await ctx.runQuery(internal.creditReports.getReport, {
+      reportId: args.reportId,
+    });
+    if (!report) {
+      throw new Error(`Report ${args.reportId} not found`);
+    }
+
+    // 2. Guard: only analyze fully parsed reports
+    if (report.parseStatus !== "done") {
+      throw new Error("Report must be fully parsed before analysis");
+    }
+
+    // 3. Idempotency guard: skip if already analyzed
+    if (report.analysisStatus === "analyzed") {
+      return; // Already done — no re-analysis
+    }
+
+    // 4. Mark as analyzing
+    await ctx.runMutation(internal.creditReports.setAnalysisStatus, {
+      reportId: args.reportId,
+      status: "analyzing",
+    });
+
+    // 5-7. Call FastAPI, store results, mark done — outer catch sets analysis_failed
+    try {
+      const fastapiUrl = process.env.FASTAPI_URL;
+      if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+      const response = await fetch(
+        `${fastapiUrl}/api/reports/${args.reportId}/analyze`,
+        { method: "POST", headers: { "Content-Type": "application/json" } },
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json() as {
+        dispute_items: Array<{
+          creditor_name: string;
+          account_number_last4?: string;
+          item_type: string;
+          description: string;
+          dispute_reason: string;
+          fcra_section: string;
+          fcra_section_title: string;
+          fcra_section_usc: string;
+          ai_confidence: number;
+          citation_validated: boolean;
+        }>;
+        reused: boolean;
+      };
+
+      // Map snake_case FastAPI response to camelCase Convex schema fields
+      const itemsForConvex = result.dispute_items.map((item) => ({
+        itemType: item.item_type,
+        creditorName: item.creditor_name,
+        accountNumberLast4: item.account_number_last4,
+        description: item.description,
+        disputeReason: item.dispute_reason,
+        fcraSection: item.fcra_section,
+        fcraSectionTitle: item.fcra_section_title,
+        aiConfidence: item.ai_confidence,
+      }));
+
+      await ctx.runMutation(internal.disputeItems.saveDisputeItems, {
+        reportId: args.reportId,
+        userId: report.userId,
+        bureau: report.bureau,
+        items: itemsForConvex,
+      });
+
+      await ctx.runMutation(internal.creditReports.setAnalysisStatus, {
+        reportId: args.reportId,
+        status: "analyzed",
+      });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown analysis error";
+      await ctx.runMutation(internal.creditReports.setAnalysisStatus, {
+        reportId: args.reportId,
+        status: "analysis_failed",
+        errorMessage,
+      });
+    }
+  },
+});
+
+/**
  * List all credit reports for the currently authenticated user.
  * Returns documents in insertion order (most recent last — use uploadedAt for sorting UI-side).
  */
