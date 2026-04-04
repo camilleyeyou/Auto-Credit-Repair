@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-04T09:24:09.711Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-04-04T09:29:17.455Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 16
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 04 (letter-generation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Plan: 2 of 3
 | Phase 03 P02 | 5 | 3 tasks | 4 files |
 | Phase 03 P03 | 2 | 1 tasks | 1 files |
 | Phase 04 P01 | 15 | 2 tasks | 9 files |
+| Phase 04 P02 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,9 @@ Recent decisions affecting current work:
 - [Phase 04]: HTML letter template implemented as Python f-string in letter_writer.py rather than Jinja2 to avoid new dependency
 - [Phase 04]: body_paragraph HTML-escaped before insertion to prevent template injection from Claude output
 - [Phase 04]: generate_letter_body validates bureau against BUREAU_ADDRESSES before Claude call to fail fast with clear ValueError
+- [Phase 04]: generateLetters follows analyzeReport action pattern: auth check, env guard, per-item try/catch loop, reactive query for results
+- [Phase 04]: getUserProfile internalQuery casts identity.subject string to Id<users> consistent with existing currentUser pattern
+- [Phase 04]: getApprovedWithoutLetters cross-queries dispute_letters by_dispute_item for D-27 idempotency — no additional boolean flag on dispute_items
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T09:24:09.704Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-04T09:29:17.450Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

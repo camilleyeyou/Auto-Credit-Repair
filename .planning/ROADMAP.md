@@ -89,7 +89,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — WeasyPrint Dockerfile deps, FastAPI letter models, HTML template, letter_writer service, /api/letters/generate endpoint
-- [ ] 04-02-PLAN.md — Convex schema (dispute_letters table), generateLetters action, CRUD queries
+- [x] 04-02-PLAN.md — Convex schema (dispute_letters table), generateLetters action, CRUD queries
 - [ ] 04-03-PLAN.md — /letters page UI, Generate Letters button on /disputes, nav link, human verification
 
 **UI hint**: yes
