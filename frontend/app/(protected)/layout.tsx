@@ -40,6 +40,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           <Link href="/disputes" className="text-sm text-muted-foreground hover:text-foreground">
             Disputes
           </Link>
+          <Link href="/letters" className="text-sm text-muted-foreground hover:text-foreground">
+            Letters
+          </Link>
           <Link href="/profile" className="text-sm text-muted-foreground hover:text-foreground">
             Profile
           </Link>
