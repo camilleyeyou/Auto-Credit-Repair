@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     libharfbuzz-subset0 \
     libffi-dev \
     libcairo2 \
-    libgdk-pixbuf2.0-0 \
+    libgdk-pixbuf-2.0-0 \
     libgobject-2.0-0 \
     libjpeg-dev \
     libopenjp2-7-dev \
