@@ -85,7 +85,13 @@ Plans:
   3. Each letter cites the specific FCRA section, references the specific account or item being disputed, and includes a signature line with enclosure notes
   4. The user can download a letter as a PDF that is formatted and readable when printed on standard paper
   5. Letter body language is personalized per dispute item — two different dispute items do not produce identical letter text
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — WeasyPrint Dockerfile deps, FastAPI letter models, HTML template, letter_writer service, /api/letters/generate endpoint
+- [ ] 04-02-PLAN.md — Convex schema (dispute_letters table), generateLetters action, CRUD queries
+- [ ] 04-03-PLAN.md — /letters page UI, Generate Letters button on /disputes, nav link, human verification
+
 **UI hint**: yes
 
 ### Phase 5: Tracking & Dashboard
@@ -107,9 +113,9 @@ Plans:
 | 1. Foundation | 4/4 | Complete   | 2026-04-03 |
 | 2. PDF Upload & Parsing | 5/5 | Complete   | 2026-04-03 |
 | 3. AI Analysis & Dispute Review | 3/4 | In Progress|  |
-| 4. Letter Generation | 0/? | Not started | - |
+| 4. Letter Generation | 0/3 | Not started | - |
 | 5. Tracking & Dashboard | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-04-03*
-*Last updated: 2026-04-03 — Phase 3 planned (4 plans, 3 waves)*
+*Last updated: 2026-04-04 — Phase 4 planned (3 plans, 3 waves)*
