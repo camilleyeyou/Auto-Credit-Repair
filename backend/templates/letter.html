@@ -1,0 +1,78 @@
+<!--
+  CreditFix Dispute Letter — Human-Readable Reference Template
+  ============================================================
+  NOTE: The canonical letter template is implemented as a Python f-string in
+        backend/services/letter_writer.py → render_letter_html().
+        This file is NOT used at runtime — it exists as a reference for
+        developers to understand the letter structure without reading Python code.
+
+  Decision: Template is a Python f-string in letter_writer.py rather than
+            a Jinja2 template to avoid adding a new dependency (Jinja2).
+            A Python f-string is sufficient for a single fixed structure.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 1in;
+  }
+  body {
+    font-family: "Liberation Serif", Georgia, serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+  }
+  .header { margin-bottom: 2em; }
+  .bureau-address { margin-bottom: 2em; }
+  .re-line { font-weight: bold; margin-bottom: 1.5em; }
+  .body-text { margin-bottom: 2em; }
+  .certified-mail { margin-bottom: 2em; }
+  .signature-block { margin-top: 3em; }
+  .signature-space { height: 3em; }
+  .enclosures { margin-top: 2em; font-size: 10pt; }
+</style>
+</head>
+<body>
+
+<!-- SENDER BLOCK: Date + User name and address (from profile) -->
+<div class="header">
+  <p>{letter_date}</p>
+  <p>{full_name}<br>{street_address}<br>{city}, {state} {zip_code}</p>
+</div>
+
+<!-- BUREAU ADDRESS: Bureau display name + mailing address (hardcoded per D-03) -->
+<div class="bureau-address">
+  <p>{bureau_display_name}<br>{bureau_address_line1}<br>{bureau_address_line2}</p>
+</div>
+
+<!-- RE LINE: Bold, identifies the disputed account -->
+<p class="re-line">RE: Dispute of Inaccurate Credit Information — Account Ending in {account_last4}</p>
+
+<!-- SALUTATION -->
+<p>Dear {bureau_display_name} Dispute Center,</p>
+
+<!-- BODY: Claude-generated unique paragraph per dispute item (D-16, D-17, D-18) -->
+<div class="body-text">
+  <p>{claude_generated_body_paragraph}</p>
+</div>
+
+<!-- CERTIFIED MAIL NOTE -->
+<p class="certified-mail">This letter is being sent via USPS Certified Mail.</p>
+
+<!-- SIGNATURE BLOCK: Per D-06 — blank space for handwritten signature -->
+<div class="signature-block">
+  <p>Sincerely,</p>
+  <div class="signature-space"></div>
+  <p>{full_name}</p>
+</div>
+
+<!-- ENCLOSURES: Per D-07 -->
+<div class="enclosures">
+  <p>Enclosures: Copy of government-issued ID, Copy of relevant credit report page</p>
+</div>
+
+</body>
+</html>

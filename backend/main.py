@@ -28,6 +28,9 @@ app.add_middleware(
 from routers.reports import router as reports_router
 app.include_router(reports_router)
 
+from routers.letters import router as letters_router
+app.include_router(letters_router)
+
 
 @app.get("/api/health")
 def health_check():
