@@ -132,7 +132,7 @@ Plans:
 - [x] 06-01-PLAN.md — Convex schema extension (bureau_responses, cfpb_complaints tables, letterType on dispute_letters) + data layer functions
 - [x] 06-02-PLAN.md — FastAPI response parser, complaint generator, letter_writer demand/escalation extension
 - [x] 06-03-PLAN.md — Convex actions: parseResponse, generateDemandLetter, generateEscalationLetter, generateCfpbNarrative
-- [ ] 06-04-PLAN.md — UI: RecordResponseDialog, tracker escalation actions, CFPB tracking, letters page badges
+- [x] 06-04-PLAN.md — UI: RecordResponseDialog, tracker escalation actions, CFPB tracking, letters page badges
 
 **UI hint**: yes
 
