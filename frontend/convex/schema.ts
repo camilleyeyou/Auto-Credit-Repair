@@ -91,6 +91,10 @@ export default defineSchema({
     letterContent: v.string(),        // HTML string (~2-5KB) — NOT the PDF bytes
     storageId:     v.id("_storage"),  // PDF stored in Convex Storage — never in document
     generatedAt:   v.number(),
+    // Phase 5 tracking fields (D-21) — all optional so existing records remain valid
+    sentAt:              v.optional(v.number()),   // Unix ms — mailing date
+    certifiedMailNumber: v.optional(v.string()),   // USPS tracking number
+    deadline:            v.optional(v.number()),   // sentAt + 30 days in ms
   })
     .index("by_user",         ["userId"])
     .index("by_dispute_item", ["disputeItemId"])
