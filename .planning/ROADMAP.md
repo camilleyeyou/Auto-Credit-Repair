@@ -3,18 +3,16 @@
 **Project:** CreditFix
 **Created:** 2026-04-03
 **Granularity:** Coarse
-**Total v1 requirements:** 29
-**Milestone:** M1 (Initial Release)
+
+## Milestones
+
+- ✅ **v1.0 Initial Release** - Phases 1-5 (shipped 2026-04-04)
+- 🚧 **v1.1 Escalation & Notifications** - Phases 6-7 (in progress)
 
 ## Phases
 
-- [x] **Phase 1: Foundation** - Project scaffold, Convex auth, and user profile (completed 2026-04-03)
-- [x] **Phase 2: PDF Upload & Parsing** - Upload UI, bureau-specific parsers, normalized output (completed 2026-04-03)
-- [ ] **Phase 3: AI Analysis & Dispute Review** - Claude integration, FCRA citations, dispute approval UI
-- [ ] **Phase 4: Letter Generation** - Personalized dispute letters downloaded as print-ready PDFs
-- [x] **Phase 5: Tracking & Dashboard** - 30-day deadline tracker, status timeline, summary dashboard (completed 2026-04-04)
-
-## Phase Details
+<details>
+<summary>✅ v1.0 Initial Release (Phases 1-5) - SHIPPED 2026-04-04</summary>
 
 ### Phase 1: Foundation
 **Goal**: User can securely access the app and store their personal information for use in letters
@@ -65,7 +63,7 @@ Plans:
   3. No SSNs or full account numbers are present in data sent to the Claude API
   4. User can view flagged items grouped by bureau and approve or skip each one individually
   5. Approved items enter a tracked lifecycle (pending_review → approved) visible in the dispute list
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — Convex schema extension (dispute_items table, analysisStatus) and data layer functions
@@ -85,7 +83,7 @@ Plans:
   3. Each letter cites the specific FCRA section, references the specific account or item being disputed, and includes a signature line with enclosure notes
   4. The user can download a letter as a PDF that is formatted and readable when printed on standard paper
   5. Letter body language is personalized per dispute item — two different dispute items do not produce identical letter text
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 04-01-PLAN.md — WeasyPrint Dockerfile deps, FastAPI letter models, HTML template, letter_writer service, /api/letters/generate endpoint
@@ -112,16 +110,47 @@ Plans:
 
 **UI hint**: yes
 
-## Progress Table
+</details>
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation | 4/4 | Complete   | 2026-04-03 |
-| 2. PDF Upload & Parsing | 5/5 | Complete   | 2026-04-03 |
-| 3. AI Analysis & Dispute Review | 3/4 | In Progress|  |
-| 4. Letter Generation | 1/3 | In Progress|  |
-| 5. Tracking & Dashboard | 3/3 | Complete   | 2026-04-04 |
+### 🚧 v1.1 Escalation & Notifications (In Progress)
+
+**Milestone Goal:** Complete the dispute lifecycle — record what the bureau said, generate escalation letters for ignored or denied disputes, suggest CFPB complaints where warranted, and send proactive email reminders so deadlines are never missed.
+
+#### Phase 6: Bureau Response & Escalation
+**Goal**: User can record a bureau's response to any dispute and immediately generate the appropriate next-step letter — second demand, escalation, or CFPB complaint
+**Depends on**: Phase 5
+**Requirements**: RESP-01, RESP-02, RESP-03, RESP-04, ESC-01, ESC-02, ESC-03, ESC-04
+**Success Criteria** (what must be TRUE):
+  1. User can upload a bureau response PDF for a sent dispute and the system extracts the outcome (verified, deleted, or corrected) using AI
+  2. User can manually enter a dispute outcome without uploading a PDF, and the dispute status updates to resolved or denied accordingly
+  3. For disputes with no bureau response after 30 days, the system generates a second demand letter the user can download and print
+  4. For disputes the bureau verified (denied), the system generates an escalation letter the user can download and print
+  5. User can generate a CFPB-ready complaint narrative from a denied dispute's history, and track CFPB complaint status and company response timeline
+**Plans**: TBD
+**UI hint**: yes
+
+#### Phase 7: Email Notifications
+**Goal**: User receives timely email reminders for approaching deadlines and overdue disputes without needing to log in daily
+**Depends on**: Phase 6
+**Requirements**: NOTF-01, NOTF-02, NOTF-03
+**Success Criteria** (what must be TRUE):
+  1. User receives an email reminder at day 25 for any active dispute approaching its 30-day deadline
+  2. User receives an email nudge at day 31 if no bureau response has been logged for a dispute
+  3. User can enable or disable email reminders and adjust reminder timing from a preferences page
+**Plans**: TBD
+
+## Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Foundation | v1.0 | 4/4 | Complete | 2026-04-03 |
+| 2. PDF Upload & Parsing | v1.0 | 5/5 | Complete | 2026-04-03 |
+| 3. AI Analysis & Dispute Review | v1.0 | 4/4 | Complete | 2026-04-04 |
+| 4. Letter Generation | v1.0 | 3/3 | Complete | 2026-04-04 |
+| 5. Tracking & Dashboard | v1.0 | 3/3 | Complete | 2026-04-04 |
+| 6. Bureau Response & Escalation | v1.1 | 0/? | Not started | - |
+| 7. Email Notifications | v1.1 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-04-03*
-*Last updated: 2026-04-04 — Phase 5 planned (3 plans, 2 waves)*
+*Last updated: 2026-04-03 — v1.1 roadmap added (Phases 6-7)*

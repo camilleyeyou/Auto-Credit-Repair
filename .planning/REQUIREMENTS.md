@@ -133,25 +133,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-01 | Phase 5 | Complete |
 | DASH-02 | Phase 5 | Complete |
 | DASH-03 | Phase 5 | Complete |
-
-| RESP-01 | — | Pending |
-| RESP-02 | — | Pending |
-| RESP-03 | — | Pending |
-| RESP-04 | — | Pending |
-| ESC-01 | — | Pending |
-| ESC-02 | — | Pending |
-| ESC-03 | — | Pending |
-| ESC-04 | — | Pending |
-| NOTF-01 | — | Pending |
-| NOTF-02 | — | Pending |
-| NOTF-03 | — | Pending |
+| RESP-01 | Phase 6 | Pending |
+| RESP-02 | Phase 6 | Pending |
+| RESP-03 | Phase 6 | Pending |
+| RESP-04 | Phase 6 | Pending |
+| ESC-01 | Phase 6 | Pending |
+| ESC-02 | Phase 6 | Pending |
+| ESC-03 | Phase 6 | Pending |
+| ESC-04 | Phase 6 | Pending |
+| NOTF-01 | Phase 7 | Pending |
+| NOTF-02 | Phase 7 | Pending |
+| NOTF-03 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 29 total (all complete)
 - v1.1 requirements: 11 total
-- Mapped to phases: 0
-- Unmapped: 11 ⚠️
+- Mapped to phases: 11
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-04 after milestone v1.1 requirements definition*
+*Last updated: 2026-04-03 — v1.1 traceability complete (Phase 6: 8 reqs, Phase 7: 3 reqs)*
