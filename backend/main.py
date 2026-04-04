@@ -31,6 +31,12 @@ app.include_router(reports_router)
 from routers.letters import router as letters_router
 app.include_router(letters_router)
 
+from routers.responses import router as responses_router
+app.include_router(responses_router)
+
+from routers.complaints import router as complaints_router
+app.include_router(complaints_router)
+
 
 @app.get("/api/health")
 def health_check():
