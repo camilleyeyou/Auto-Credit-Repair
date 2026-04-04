@@ -80,4 +80,19 @@ export default defineSchema({
     .index("by_report", ["reportId"])
     .index("by_user",   ["userId"])
     .index("by_user_bureau", ["userId", "bureau"]),
+  dispute_letters: defineTable({
+    disputeItemId: v.id("dispute_items"),
+    userId:        v.string(),
+    bureau:        v.union(
+      v.literal("experian"),
+      v.literal("equifax"),
+      v.literal("transunion"),
+    ),
+    letterContent: v.string(),        // HTML string (~2-5KB) — NOT the PDF bytes
+    storageId:     v.id("_storage"),  // PDF stored in Convex Storage — never in document
+    generatedAt:   v.number(),
+  })
+    .index("by_user",         ["userId"])
+    .index("by_dispute_item", ["disputeItemId"])
+    .index("by_user_bureau",  ["userId", "bureau"]),
 });
