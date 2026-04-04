@@ -8,12 +8,14 @@
  * - Letters grouped by bureau client-side
  * - Each card: bureau, generated date, Preview toggle, Download PDF button
  * - LetterCard child component fetches its own download URL reactively
- * - TODO: join with dispute_items for creditor name in a future iteration
+ * - MarkAsSentDialog: opens on button click, collects send date + tracking number,
+ *   calls markAsSent mutation, card reactively updates to show sent status
  */
 import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { Dialog } from "@base-ui/react/dialog";
 import Link from "next/link";
 import { format } from "date-fns";
 
@@ -27,6 +29,10 @@ interface DisputeLetter {
   letterContent: string;
   storageId: Id<"_storage">;
   generatedAt: number;
+  // New optional fields from Plan 01:
+  sentAt?: number;
+  certifiedMailNumber?: string;
+  deadline?: number;
 }
 
 const BUREAU_LABELS: Record<Bureau, string> = {
@@ -38,9 +44,112 @@ const BUREAU_LABELS: Record<Bureau, string> = {
 const BUREAUS: Bureau[] = ["experian", "equifax", "transunion"];
 
 /**
+ * MarkAsSentDialog — dialog for recording that a letter was mailed.
+ * Collects send date (defaults to today) and optional certified mail number.
+ * Calls markAsSent mutation on submit; closes on success (Convex reactive
+ * query auto-refreshes the parent LetterCard).
+ */
+function MarkAsSentDialog({
+  letterId,
+  onSuccess,
+}: {
+  letterId: Id<"dispute_letters">;
+  onSuccess: () => void;
+}) {
+  const today = new Date().toISOString().split("T")[0];
+  const [open, setOpen] = useState(false);
+  const [dateValue, setDateValue] = useState(today);
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const markAsSent = useMutation(api.letters.markAsSent);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      // Use T12:00:00 to avoid off-by-one day at UTC boundaries
+      const sentAt = new Date(dateValue + "T12:00:00").getTime();
+      await markAsSent({
+        letterId,
+        sentAt,
+        certifiedMailNumber: trackingNumber.trim() || undefined,
+      });
+      onSuccess();
+      setOpen(false);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save. Please try again.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger
+        className="inline-flex items-center rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+      >
+        Mark as Sent
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Popup className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+          <Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
+            Mark Letter as Sent
+          </Dialog.Title>
+          {error && (
+            <p className="text-sm text-red-600 mb-3">{error}</p>
+          )}
+          <form onSubmit={handleSubmit}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Send Date
+              <input
+                type="date"
+                value={dateValue}
+                onChange={(e) => setDateValue(e.target.value)}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-sm font-medium text-gray-700 mt-3 mb-1">
+              Certified Mail Tracking Number (optional)
+              <input
+                type="text"
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+                placeholder="e.g. 9400111899223396942347"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              />
+            </label>
+            <div className="flex gap-2 mt-5 justify-end">
+              <Dialog.Close
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                Cancel
+              </Dialog.Close>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {submitting ? "Saving..." : "Confirm Sent"}
+              </button>
+            </div>
+          </form>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+/**
  * LetterCard — renders a single letter card.
  * Fetches its own download URL reactively via useQuery.
  * Manages local preview toggle state.
+ * Shows Mark as Sent button for unsent letters; shows sent status for sent letters.
  */
 function LetterCard({ letter }: { letter: DisputeLetter }) {
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -96,7 +205,31 @@ function LetterCard({ letter }: { letter: DisputeLetter }) {
           >
             {previewOpen ? "Hide Preview" : "Preview"}
           </button>
+
+          {/* Mark as Sent — only shown when letter has not yet been sent */}
+          {letter.sentAt === undefined && (
+            <MarkAsSentDialog letterId={letter._id} onSuccess={() => {}} />
+          )}
         </div>
+
+        {/* Sent status — shown after marking as sent */}
+        {letter.sentAt !== undefined && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-xs text-green-700 font-medium">
+              Sent {format(new Date(letter.sentAt), "MMMM d, yyyy")}
+            </p>
+            {letter.certifiedMailNumber && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                Tracking: {letter.certifiedMailNumber}
+              </p>
+            )}
+            {letter.deadline && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                30-day deadline: {format(new Date(letter.deadline), "MMMM d, yyyy")}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Inline HTML preview (per D-22) */}
