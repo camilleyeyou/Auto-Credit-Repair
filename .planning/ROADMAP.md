@@ -103,11 +103,11 @@ Plans:
   2. Tracker page shows each dispute on a visual timeline with color-coded status (pending, sent, waiting, overdue, resolved, denied)
   3. Disputes past their 30-day window with no recorded response are visually flagged as overdue on both the tracker and dashboard
   4. Dashboard shows summary cards (total disputes, letters sent, responses received, resolved count), upcoming deadlines, and quick action buttons to start common workflows
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 05-01-PLAN.md — date-fns install, dispute_letters schema extension, markAsSent/getSentLetters/getDashboardStats/getUpcomingDeadlines Convex functions
-- [ ] 05-02-PLAN.md — Mark as Sent button and dialog on /letters page
+- [x] 05-02-PLAN.md — Mark as Sent button and dialog on /letters page
 - [ ] 05-03-PLAN.md — /tracker page, /dashboard replacement, nav + middleware
 
 **UI hint**: yes
@@ -120,7 +120,7 @@ Plans:
 | 2. PDF Upload & Parsing | 5/5 | Complete   | 2026-04-03 |
 | 3. AI Analysis & Dispute Review | 3/4 | In Progress|  |
 | 4. Letter Generation | 1/3 | In Progress|  |
-| 5. Tracking & Dashboard | 1/3 | In Progress|  |
+| 5. Tracking & Dashboard | 2/3 | In Progress|  |
 
 ---
 *Roadmap created: 2026-04-03*

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-04-04T10:17:08.341Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-04-04T10:27:19.215Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 05 (tracking-dashboard) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Plan: 2 of 3
 | Phase 04 P01 | 15 | 2 tasks | 9 files |
 | Phase 04 P02 | 2 | 2 tasks | 3 files |
 | Phase 05-tracking-dashboard P01 | 5 | 2 tasks | 3 files |
+| Phase 05-tracking-dashboard P02 | 5 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Recent decisions affecting current work:
 - [Phase 05-tracking-dashboard]: deadline stored at write time in markAsSent (not computed at read time) so queries can filter against it directly
 - [Phase 05-tracking-dashboard]: getDashboardStats uses itemStatusMap for O(1) overdue status checks; overdue excludes resolved/denied items (status must be 'sent')
 - [Phase 05-tracking-dashboard]: markAsSent guards against double-marking: throws if letter.sentAt already set
+- [Phase 05-tracking-dashboard]: @base-ui/react v1.3.0 Dialog.Trigger and Dialog.Close use className prop directly (not asChild) — render prop pattern vs Radix asChild
+- [Phase 05-tracking-dashboard]: sentAt conversion uses new Date(dateValue + 'T12:00:00').getTime() in MarkAsSentDialog to avoid UTC midnight timezone boundary off-by-one-day
 
 ### Pending Todos
 
@@ -114,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T10:17:08.335Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-04-04T10:27:19.210Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
