@@ -95,8 +95,61 @@ export default defineSchema({
     sentAt:              v.optional(v.number()),   // Unix ms — mailing date
     certifiedMailNumber: v.optional(v.string()),   // USPS tracking number
     deadline:            v.optional(v.number()),   // sentAt + 30 days in ms
+    // Phase 6 — letter type for escalation tracking (backward compat — optional)
+    letterType: v.optional(v.union(
+      v.literal("initial"),
+      v.literal("demand"),
+      v.literal("escalation"),
+    )),
   })
     .index("by_user",         ["userId"])
     .index("by_dispute_item", ["disputeItemId"])
     .index("by_user_bureau",  ["userId", "bureau"]),
+  bureau_responses: defineTable({
+    disputeItemId:  v.id("dispute_items"),
+    userId:         v.string(),
+    bureau:         v.union(
+      v.literal("experian"),
+      v.literal("equifax"),
+      v.literal("transunion"),
+    ),
+    outcome:        v.union(
+      v.literal("verified"),
+      v.literal("deleted"),
+      v.literal("corrected"),
+      v.literal("no_response"),
+      v.literal("unknown"),
+    ),
+    accountName:    v.optional(v.string()),
+    responseDate:   v.optional(v.number()),
+    reasonCode:     v.optional(v.string()),
+    storageId:      v.optional(v.id("_storage")),
+    recordedAt:     v.number(),
+    entryMethod:    v.union(v.literal("pdf_upload"), v.literal("manual")),
+  })
+    .index("by_dispute_item", ["disputeItemId"])
+    .index("by_user",         ["userId"])
+    .index("by_user_bureau",  ["userId", "bureau"]),
+  cfpb_complaints: defineTable({
+    disputeItemId:       v.id("dispute_items"),
+    userId:              v.string(),
+    bureau:              v.union(
+      v.literal("experian"),
+      v.literal("equifax"),
+      v.literal("transunion"),
+    ),
+    narrative:           v.string(),
+    generatedAt:         v.number(),
+    portalStatus:        v.optional(v.union(
+      v.literal("draft"),
+      v.literal("filed"),
+      v.literal("response_received"),
+      v.literal("closed"),
+    )),
+    filedAt:             v.optional(v.number()),
+    companyResponseDate: v.optional(v.number()),
+    closedDate:          v.optional(v.number()),
+  })
+    .index("by_dispute_item", ["disputeItemId"])
+    .index("by_user",         ["userId"]),
 });
