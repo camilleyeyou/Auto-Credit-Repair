@@ -263,7 +263,11 @@ export const analyzeReport = action({
 
       const response = await fetch(
         `${fastapiUrl}/api/reports/${args.reportId}/analyze`,
-        { method: "POST", headers: { "Content-Type": "application/json" } },
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ parsed_data: report.parsedData }),
+        },
       );
 
       if (!response.ok) {
