@@ -196,6 +196,29 @@ export const parseReport = action({
 });
 
 /**
+ * Internal mutation: update the analysisStatus of a report.
+ * Called by analyzeReport action to track AI pipeline progress.
+ */
+export const setAnalysisStatus = internalMutation({
+  args: {
+    reportId: v.id("credit_reports"),
+    status: v.union(
+      v.literal("not_analyzed"),
+      v.literal("analyzing"),
+      v.literal("analyzed"),
+      v.literal("analysis_failed"),
+    ),
+    errorMessage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.reportId, {
+      analysisStatus: args.status,
+      analysisErrorMessage: args.errorMessage,
+    });
+  },
+});
+
+/**
  * List all credit reports for the currently authenticated user.
  * Returns documents in insertion order (most recent last — use uploadedAt for sorting UI-side).
  */
