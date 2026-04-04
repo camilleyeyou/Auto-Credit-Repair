@@ -40,7 +40,44 @@ export default defineSchema({
     rawText: v.optional(v.string()),       // raw text for debugging (D-22)
     errorMessage: v.optional(v.string()),  // set on failed or image_only
     confidence: v.optional(v.number()),    // 0.0–1.0 parser confidence (D-25)
+    analysisStatus: v.optional(v.union(
+      v.literal("not_analyzed"),
+      v.literal("analyzing"),
+      v.literal("analyzed"),
+      v.literal("analysis_failed"),
+    )),
+    analysisErrorMessage: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
+    .index("by_user_bureau", ["userId", "bureau"]),
+  dispute_items: defineTable({
+    reportId:           v.id("credit_reports"),
+    userId:             v.string(),
+    bureau:             v.union(
+      v.literal("experian"),
+      v.literal("equifax"),
+      v.literal("transunion"),
+    ),
+    itemType:           v.string(),
+    creditorName:       v.string(),
+    accountNumberLast4: v.optional(v.string()),
+    description:        v.string(),
+    disputeReason:      v.string(),
+    fcraSection:        v.string(),
+    fcraSectionTitle:   v.string(),
+    aiConfidence:       v.number(),
+    status:             v.union(
+      v.literal("pending_review"),
+      v.literal("approved"),
+      v.literal("skipped"),
+      v.literal("letter_generated"),
+      v.literal("sent"),
+      v.literal("resolved"),
+      v.literal("denied"),
+    ),
+    createdAt:          v.number(),
+  })
+    .index("by_report", ["reportId"])
+    .index("by_user",   ["userId"])
     .index("by_user_bureau", ["userId", "bureau"]),
 });
