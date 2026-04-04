@@ -18,7 +18,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
 
 type Bureau = "experian" | "equifax" | "transunion";
-type DisputeStatus = "pending_review" | "approved" | "skipped";
+type DisputeStatus = "pending_review" | "approved" | "skipped" | "letter_generated" | "sent" | "resolved" | "denied";
 
 interface DisputeItem {
   _id: Id<"dispute_items">;
@@ -245,10 +245,23 @@ export default function DisputesPage() {
                   className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
                     item.status === "approved"
                       ? "bg-green-100 text-green-800"
+                      : item.status === "letter_generated"
+                      ? "bg-blue-100 text-blue-800"
+                      : item.status === "sent"
+                      ? "bg-indigo-100 text-indigo-800"
+                      : item.status === "resolved"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : item.status === "denied"
+                      ? "bg-red-100 text-red-800"
                       : "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {item.status === "approved" ? "Approved" : "Skipped"}
+                  {item.status === "approved" ? "Approved"
+                    : item.status === "letter_generated" ? "Letter Generated"
+                    : item.status === "sent" ? "Sent"
+                    : item.status === "resolved" ? "Resolved"
+                    : item.status === "denied" ? "Denied"
+                    : "Skipped"}
                 </span>
               )}
             </div>
