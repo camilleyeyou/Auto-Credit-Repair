@@ -17,6 +17,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useAction } from "convex/react";
+import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import {
@@ -38,6 +39,8 @@ interface CreditReport {
   rawText?: string;
   errorMessage?: string;
   confidence?: number;
+  analysisStatus?: "not_analyzed" | "analyzing" | "analyzed" | "analysis_failed";
+  analysisErrorMessage?: string;
 }
 
 const BUREAUS: Bureau[] = ["experian", "equifax", "transunion"];
@@ -46,6 +49,8 @@ export default function UploadPage() {
   const generateUploadUrl = useMutation(api.creditReports.generateUploadUrl);
   const saveReport = useMutation(api.creditReports.saveReport);
   const parseReport = useAction(api.creditReports.parseReport);
+  const analyzeReport = useAction(api.creditReports.analyzeReport);
+  const router = useRouter();
   const reports = useQuery(api.creditReports.listByUser);
 
   const [localStatuses, setLocalStatuses] = useState<Record<Bureau, LocalStatus>>({
@@ -110,6 +115,18 @@ export default function UploadPage() {
     [generateUploadUrl, saveReport, parseReport]
   );
 
+  const handleAnalyze = useCallback(
+    async (reportId: Id<"credit_reports">) => {
+      try {
+        await analyzeReport({ reportId });
+        router.push("/disputes");
+      } catch (err) {
+        console.error("Analysis error:", err);
+      }
+    },
+    [analyzeReport, router]
+  );
+
   const latestByBureau = BUREAUS.reduce<Record<Bureau, CreditReport | undefined>>(
     (acc, bureau) => {
       if (!reports) {
@@ -166,15 +183,61 @@ export default function UploadPage() {
       </div>
 
       {reports && (reports as CreditReport[]).some((r: CreditReport) => r.parseStatus === "done") && (
-        <div className="mt-8 rounded-lg border border-green-200 bg-green-50 p-4">
-          <p className="text-sm font-medium text-green-800">
-            {(reports as CreditReport[]).filter((r: CreditReport) => r.parseStatus === "done").length} report
-            {(reports as CreditReport[]).filter((r: CreditReport) => r.parseStatus === "done").length !== 1 ? "s" : ""} parsed
-            and ready for AI analysis.
-          </p>
-          <p className="mt-1 text-xs text-green-700">
-            Proceed to the Analysis page when you are ready to identify disputable items.
-          </p>
+        <div className="mt-8 space-y-3">
+          <h2 className="text-sm font-semibold text-gray-700">AI Analysis</h2>
+          {(reports as CreditReport[])
+            .filter((r: CreditReport) => r.parseStatus === "done")
+            .sort((a: CreditReport, b: CreditReport) => b.uploadedAt - a.uploadedAt)
+            .map((report: CreditReport) => (
+              <div
+                key={report._id}
+                className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
+              >
+                <div>
+                  <span className="text-sm font-medium text-gray-900 capitalize">
+                    {report.bureau}
+                  </span>
+                  <span className="ml-2 text-xs text-gray-400">
+                    {new Date(report.uploadedAt).toLocaleDateString()}
+                  </span>
+                  {/* Analysis status display */}
+                  {report.analysisStatus === "analyzing" && (
+                    <span className="ml-2 text-xs text-blue-600 animate-pulse">
+                      Analyzing with AI...
+                    </span>
+                  )}
+                  {report.analysisStatus === "analyzed" && (
+                    <span className="ml-2 text-xs font-medium text-green-700">
+                      &#10003; Analysis complete
+                    </span>
+                  )}
+                  {report.analysisStatus === "analysis_failed" && (
+                    <span className="ml-2 text-xs text-red-600">
+                      {report.analysisErrorMessage ?? "Analysis failed"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Analyze button — only for parsed reports not yet analyzed */}
+                {report.analysisStatus === "analyzed" ? (
+                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                    Analysis complete
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleAnalyze(report._id)}
+                    disabled={report.analysisStatus === "analyzing"}
+                    className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {report.analysisStatus === "analyzing"
+                      ? "Analyzing..."
+                      : report.analysisStatus === "analysis_failed"
+                      ? "Retry Analysis"
+                      : "Analyze Report"}
+                  </button>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </div>
