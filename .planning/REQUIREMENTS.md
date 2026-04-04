@@ -55,7 +55,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **DASH-01**: Dashboard shows summary cards (total disputes, letters sent, responses received, resolved)
 - [x] **DASH-02**: Dashboard shows upcoming deadlines for active disputes
-- [ ] **DASH-03**: Dashboard has quick action buttons (Upload Report, Review Items, Download Letters)
+- [x] **DASH-03**: Dashboard has quick action buttons (Upload Report, Review Items, Download Letters)
 
 ## v2 Requirements
 
@@ -124,7 +124,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRK-04 | Phase 5 | Complete |
 | DASH-01 | Phase 5 | Complete |
 | DASH-02 | Phase 5 | Complete |
-| DASH-03 | Phase 5 | Pending |
+| DASH-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 29 total
