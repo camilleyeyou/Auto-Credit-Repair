@@ -102,6 +102,17 @@ export const listByUser = query({
 });
 
 /**
+ * Internal mutation: mark a dispute item as letter_generated.
+ * Called by the generateLetters action after a letter is stored (D-26).
+ */
+export const setLetterGenerated = internalMutation({
+  args: { disputeId: v.id("dispute_items") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.disputeId, { status: "letter_generated" });
+  },
+});
+
+/**
  * Public query: list all dispute items for a specific credit report.
  * Auth-guarded: verifies the requesting user owns the report (D-19).
  */
