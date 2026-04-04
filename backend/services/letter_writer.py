@@ -53,6 +53,36 @@ LETTER_SYSTEM_PROMPT = (
     "7. Make the language unique and specific to this account — not generic boilerplate."
 )
 
+DEMAND_SYSTEM_PROMPT = (
+    "You are a credit dispute follow-up letter writer. Write a single professional paragraph "
+    "for a formal demand letter under the Fair Credit Reporting Act (FCRA) Section 611. "
+    "The bureau failed to respond within the required 30-day investigation window. "
+    "Rules: "
+    "1. Reference the specific FCRA 30-day investigation requirement (15 U.S.C. § 1681i). "
+    "2. State that the original dispute was sent and no response was received within 30 days. "
+    "3. Demand immediate investigation and written response. "
+    "4. Use firm but polite tone. "
+    "5. NEVER guarantee removal — use hedged language. "
+    "6. Do NOT state what the bureau is 'legally required' to do — use procedural language only. "
+    "7. One paragraph, 3-5 sentences."
+)
+
+ESCALATION_SYSTEM_PROMPT = (
+    "You are a credit dispute escalation letter writer. Write a single professional paragraph "
+    "for a formal escalation letter under the Fair Credit Reporting Act (FCRA). "
+    "The bureau verified or denied the original dispute. "
+    "Rules: "
+    "1. Reference the original dispute and the bureau's verification response. "
+    "2. Note that furnishers have an obligation to investigate disputes under FCRA § 623 "
+    "   (15 U.S.C. § 1681s-2) and that this escalation puts the furnisher on notice. "
+    "3. State that new or additional documentation is enclosed contradicting the bureau's findings. "
+    "4. Request re-investigation under FCRA Section 611 (15 U.S.C. § 1681i). "
+    "5. Use firm but polite tone. "
+    "6. NEVER guarantee removal — use hedged language. "
+    "7. Do NOT state what the bureau is 'legally required' to do — use procedural language only. "
+    "8. One paragraph, 3-5 sentences."
+)
+
 
 # ---------------------------------------------------------------------------
 # Claude letter body generator — per D-10, D-15, D-16, D-18, D-19
@@ -80,6 +110,14 @@ async def generate_letter_body(request: LetterRequest) -> str:
             f"Must be one of: {list(BUREAU_ADDRESSES.keys())}"
         )
 
+    # Branch on letter_type for demand/escalation — per Phase 6 plan
+    if request.letter_type == "demand":
+        system_prompt = DEMAND_SYSTEM_PROMPT
+    elif request.letter_type == "escalation":
+        system_prompt = ESCALATION_SYSTEM_PROMPT
+    else:
+        system_prompt = LETTER_SYSTEM_PROMPT
+
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
     user_message = (
@@ -91,10 +129,16 @@ async def generate_letter_body(request: LetterRequest) -> str:
         f"FCRA basis: {request.fcra_section_usc} ({request.fcra_section_title})\n"
     )
 
+    # Add context fields for demand/escalation letter types
+    if request.letter_type == "demand" and request.original_sent_date:
+        user_message += f"Original dispute sent date: {request.original_sent_date}\n"
+    if request.letter_type == "escalation" and request.bureau_outcome_summary:
+        user_message += f"Bureau outcome summary: {request.bureau_outcome_summary}\n"
+
     response = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=512,
-        system=LETTER_SYSTEM_PROMPT,
+        system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
     )
     return response.content[0].text.strip()

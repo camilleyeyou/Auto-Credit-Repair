@@ -24,6 +24,10 @@ class LetterRequest(BaseModel):
     city: str
     state: str
     zip_code: str
+    # Phase 6 extension — letter type for demand/escalation branches
+    letter_type: Optional[str] = None           # "initial" | "demand" | "escalation"
+    original_sent_date: Optional[str] = None    # ISO date, used in demand letter narrative
+    bureau_outcome_summary: Optional[str] = None  # used in escalation letter narrative
 
 
 class LetterResponse(BaseModel):
