@@ -23,11 +23,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### AI Analysis
 
-- [ ] **AI-01**: Claude API analyzes parsed credit report data and identifies disputable items
-- [ ] **AI-02**: Each flagged item includes dispute reason and relevant FCRA section citation
-- [ ] **AI-03**: FCRA citations validated against a hardcoded library of real statute sections
-- [ ] **AI-04**: PII (SSNs, full account numbers) stripped from data before sending to Claude API
-- [ ] **AI-05**: AI generates item-specific dispute reasoning, not generic boilerplate
+- [x] **AI-01**: Claude API analyzes parsed credit report data and identifies disputable items
+- [x] **AI-02**: Each flagged item includes dispute reason and relevant FCRA section citation
+- [x] **AI-03**: FCRA citations validated against a hardcoded library of real statute sections
+- [x] **AI-04**: PII (SSNs, full account numbers) stripped from data before sending to Claude API
+- [x] **AI-05**: AI generates item-specific dispute reasoning, not generic boilerplate
 
 ### Dispute Management
 
@@ -104,11 +104,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PDF-03 | Phase 2 | Complete |
 | PDF-04 | Phase 2 | Complete |
 | PDF-05 | Phase 2 | Complete |
-| AI-01 | Phase 3 | Pending |
-| AI-02 | Phase 3 | Pending |
-| AI-03 | Phase 3 | Pending |
-| AI-04 | Phase 3 | Pending |
-| AI-05 | Phase 3 | Pending |
+| AI-01 | Phase 3 | Complete |
+| AI-02 | Phase 3 | Complete |
+| AI-03 | Phase 3 | Complete |
+| AI-04 | Phase 3 | Complete |
+| AI-05 | Phase 3 | Complete |
 | DISP-01 | Phase 3 | Complete |
 | DISP-02 | Phase 3 | Complete |
 | DISP-03 | Phase 3 | Complete |
