@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 04
-stopped_at: Phase 4 plans created and verified
-last_updated: "2026-04-04T09:13:09.616Z"
+status: Ready to execute
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-04T09:24:09.711Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 04 (letter-generation) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Plan: 1 of 3
 | Phase 03 P01 | 2 | 3 tasks | 3 files |
 | Phase 03 P02 | 5 | 3 tasks | 4 files |
 | Phase 03 P03 | 2 | 1 tasks | 1 files |
+| Phase 04 P01 | 15 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 03]: analyzeReport mirrors parseReport pattern so both actions have identical structure, error handling, and status update flow
 - [Phase 03]: FASTAPI_URL guard throws inside try/catch so outer catch catches it and sets analysis_failed — prevents record stuck in analyzing state
 - [Phase 03]: analyzeReport idempotency guard returns void silently when analysisStatus already analyzed — not an error, just a no-op
+- [Phase 04]: HTML letter template implemented as Python f-string in letter_writer.py rather than Jinja2 to avoid new dependency
+- [Phase 04]: body_paragraph HTML-escaped before insertion to prevent template injection from Claude output
+- [Phase 04]: generate_letter_body validates bureau against BUREAU_ADDRESSES before Claude call to fail fast with clear ValueError
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T09:11:40.329Z
-Stopped at: Phase 4 plans created and verified
-Resume file: .planning/phases/04-letter-generation/04-01-PLAN.md
+Last session: 2026-04-04T09:24:09.704Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None

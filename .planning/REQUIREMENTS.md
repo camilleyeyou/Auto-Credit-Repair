@@ -37,12 +37,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Letter Generation
 
-- [ ] **LTR-01**: System generates dispute letters addressed to the correct bureau with proper mailing address
-- [ ] **LTR-02**: Letters auto-populate user's name and address from profile
-- [ ] **LTR-03**: Letters cite specific FCRA section and reference specific account/issue
-- [ ] **LTR-04**: Letters include signature line and enclosure notes (ID copy, report page)
-- [ ] **LTR-05**: Letters download as print-ready PDFs via WeasyPrint
-- [ ] **LTR-06**: AI personalizes letter language per dispute item (unique wording, not templates)
+- [x] **LTR-01**: System generates dispute letters addressed to the correct bureau with proper mailing address
+- [x] **LTR-02**: Letters auto-populate user's name and address from profile
+- [x] **LTR-03**: Letters cite specific FCRA section and reference specific account/issue
+- [x] **LTR-04**: Letters include signature line and enclosure notes (ID copy, report page)
+- [x] **LTR-05**: Letters download as print-ready PDFs via WeasyPrint
+- [x] **LTR-06**: AI personalizes letter language per dispute item (unique wording, not templates)
 
 ### Tracking & Deadlines
 
@@ -112,12 +112,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DISP-01 | Phase 3 | Complete |
 | DISP-02 | Phase 3 | Complete |
 | DISP-03 | Phase 3 | Complete |
-| LTR-01 | Phase 4 | Pending |
-| LTR-02 | Phase 4 | Pending |
-| LTR-03 | Phase 4 | Pending |
-| LTR-04 | Phase 4 | Pending |
-| LTR-05 | Phase 4 | Pending |
-| LTR-06 | Phase 4 | Pending |
+| LTR-01 | Phase 4 | Complete |
+| LTR-02 | Phase 4 | Complete |
+| LTR-03 | Phase 4 | Complete |
+| LTR-04 | Phase 4 | Complete |
+| LTR-05 | Phase 4 | Complete |
+| LTR-06 | Phase 4 | Complete |
 | TRK-01 | Phase 5 | Pending |
 | TRK-02 | Phase 5 | Pending |
 | TRK-03 | Phase 5 | Pending |
