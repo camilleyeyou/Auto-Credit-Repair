@@ -65,12 +65,12 @@ Plans:
   3. No SSNs or full account numbers are present in data sent to the Claude API
   4. User can view flagged items grouped by bureau and approve or skip each one individually
   5. Approved items enter a tracked lifecycle (pending_review → approved) visible in the dispute list
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 - [x] 03-01-PLAN.md — Convex schema extension (dispute_items table, analysisStatus) and data layer functions
 - [x] 03-02-PLAN.md — FastAPI AI analyzer: FCRA library, PII stripping, Claude tool_use, analyze endpoint
-- [ ] 03-03-PLAN.md — analyzeReport Convex action (orchestrates FastAPI call, stores dispute items)
+- [x] 03-03-PLAN.md — analyzeReport Convex action (orchestrates FastAPI call, stores dispute items)
 - [ ] 03-04-PLAN.md — Disputes review page, Analyze button on upload page, nav link, middleware
 
 **UI hint**: yes
@@ -106,7 +106,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete   | 2026-04-03 |
 | 2. PDF Upload & Parsing | 5/5 | Complete   | 2026-04-03 |
-| 3. AI Analysis & Dispute Review | 2/4 | In Progress|  |
+| 3. AI Analysis & Dispute Review | 3/4 | In Progress|  |
 | 4. Letter Generation | 0/? | Not started | - |
 | 5. Tracking & Dashboard | 0/? | Not started | - |
 
