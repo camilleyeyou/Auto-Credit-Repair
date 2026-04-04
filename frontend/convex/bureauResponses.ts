@@ -1,5 +1,6 @@
-import { action, mutation, query, internalMutation } from "./_generated/server";
+import { action, mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 // Shared argument validators — reused across saveResponse and recordResponseManual
 const bureauValidator = v.union(
@@ -172,5 +173,95 @@ export const getResponsesForUser = query({
       .withIndex("by_user", (q) => q.eq("userId", identity.subject))
       .order("desc")
       .collect();
+  },
+});
+
+/**
+ * Internal query: fetch a single bureau_response by ID.
+ * Used by generateEscalationLetter and generateCfpbNarrative actions.
+ */
+export const getResponseById = internalQuery({
+  args: { id: v.id("bureau_responses") },
+  handler: async (ctx, args) => ctx.db.get(args.id),
+});
+
+/**
+ * Public action: parse an uploaded bureau response PDF and save the result.
+ * RESP-01 PDF parsing path.
+ *
+ * Flow:
+ * 1. Auth check
+ * 2. Null-check Convex Storage URL (Pitfall 3)
+ * 3. FASTAPI_URL env guard
+ * 4. POST to FastAPI /api/responses/parse
+ * 5. Throw on "unknown" outcome (surface to UI for manual entry)
+ * 6. Save via saveResponse internalMutation
+ */
+export const parseResponse = action({
+  args: {
+    storageId:     v.id("_storage"),
+    disputeItemId: v.id("dispute_items"),
+    bureau:        v.union(
+      v.literal("experian"),
+      v.literal("equifax"),
+      v.literal("transunion"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    // 1. Auth check
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    // 2. Storage URL null check (Pitfall 3 — MUST null-check before using)
+    const fileUrl = await ctx.storage.getUrl(args.storageId);
+    if (fileUrl === null) {
+      throw new Error("Storage URL not found — file may be missing");
+    }
+
+    // 3. FASTAPI_URL env guard
+    const fastapiUrl = process.env.FASTAPI_URL;
+    if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+    // 4. POST to FastAPI response parsing endpoint
+    const response = await fetch(`${fastapiUrl}/api/responses/parse`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ pdf_url: fileUrl, bureau: args.bureau }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+    }
+
+    // 5. Parse response
+    const parsed = await response.json() as {
+      outcome:        string;
+      account_name?:  string;
+      response_date?: string;
+      reason_code?:   string;
+    };
+
+    // Throw on "unknown" — surface to UI rather than storing a broken record (Pitfall 1)
+    if (parsed.outcome === "unknown") {
+      throw new Error(
+        "Outcome could not be determined — please use manual entry",
+      );
+    }
+
+    // 6. Save via saveResponse internalMutation
+    await ctx.runMutation(internal.bureauResponses.saveResponse, {
+      disputeItemId: args.disputeItemId,
+      userId:        identity.subject,
+      bureau:        args.bureau,
+      outcome:       parsed.outcome as "verified" | "deleted" | "corrected" | "no_response" | "unknown",
+      accountName:   parsed.account_name,
+      responseDate:  parsed.response_date
+        ? new Date(parsed.response_date).getTime()
+        : undefined,
+      reasonCode:    parsed.reason_code,
+      storageId:     args.storageId,
+      entryMethod:   "pdf_upload",
+    });
   },
 });
