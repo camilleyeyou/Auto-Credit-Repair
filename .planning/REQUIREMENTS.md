@@ -57,21 +57,29 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DASH-02**: Dashboard shows upcoming deadlines for active disputes
 - [x] **DASH-03**: Dashboard has quick action buttons (Upload Report, Review Items, Download Letters)
 
-## v2 Requirements
+## v1.1 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Requirements for Escalation & Notifications milestone. Each maps to roadmap phases.
 
-### Email Reminders
+### Bureau Response Handling
 
-- **NOTF-01**: User receives email reminder at day 25 for approaching dispute deadlines
-- **NOTF-02**: Email sent via Resend from Convex action
+- [ ] **RESP-01**: User can upload a bureau response PDF for a sent dispute
+- [ ] **RESP-02**: AI parses response PDF and extracts outcome (verified, deleted, corrected)
+- [ ] **RESP-03**: User can manually enter dispute outcome without uploading a PDF
+- [ ] **RESP-04**: Dispute item status updates to reflect bureau response (resolved/denied)
 
 ### Escalation
 
-- **ESC-01**: System generates second demand letter for disputes ignored past 30 days
-- **ESC-02**: System generates escalation letter for denied disputes
-- **ESC-03**: System suggests filing CFPB complaint for denied disputes
-- **ESC-04**: User can upload bureau response letters for next-round AI guidance
+- [ ] **ESC-01**: System generates a second demand letter for disputes with no response after 30 days
+- [ ] **ESC-02**: System generates an escalation letter for disputes where bureau verified (denied)
+- [ ] **ESC-03**: System generates a CFPB-ready complaint narrative from dispute history
+- [ ] **ESC-04**: User can track CFPB complaint status and company response timeline
+
+### Email Reminders
+
+- [ ] **NOTF-01**: User receives email reminder at day 25 for approaching dispute deadlines
+- [ ] **NOTF-02**: User receives email nudge at day 31 if no bureau response is logged
+- [ ] **NOTF-03**: User can configure email preferences (enable/disable, customize timing)
 
 ## Out of Scope
 
@@ -126,11 +134,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-02 | Phase 5 | Complete |
 | DASH-03 | Phase 5 | Complete |
 
+| RESP-01 | — | Pending |
+| RESP-02 | — | Pending |
+| RESP-03 | — | Pending |
+| RESP-04 | — | Pending |
+| ESC-01 | — | Pending |
+| ESC-02 | — | Pending |
+| ESC-03 | — | Pending |
+| ESC-04 | — | Pending |
+| NOTF-01 | — | Pending |
+| NOTF-02 | — | Pending |
+| NOTF-03 | — | Pending |
+
 **Coverage:**
-- v1 requirements: 29 total
-- Mapped to phases: 29
-- Unmapped: 0 ✓
+- v1 requirements: 29 total (all complete)
+- v1.1 requirements: 11 total
+- Mapped to phases: 0
+- Unmapped: 11 ⚠️
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after roadmap creation — all 29 requirements mapped*
+*Last updated: 2026-04-04 after milestone v1.1 requirements definition*
