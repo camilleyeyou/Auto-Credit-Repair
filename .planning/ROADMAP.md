@@ -126,10 +126,10 @@ Plans:
   3. For disputes with no bureau response after 30 days, the system generates a second demand letter the user can download and print
   4. For disputes the bureau verified (denied), the system generates an escalation letter the user can download and print
   5. User can generate a CFPB-ready complaint narrative from a denied dispute's history, and track CFPB complaint status and company response timeline
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
-- [ ] 06-01-PLAN.md — Convex schema extension (bureau_responses, cfpb_complaints tables, letterType on dispute_letters) + data layer functions
+- [x] 06-01-PLAN.md — Convex schema extension (bureau_responses, cfpb_complaints tables, letterType on dispute_letters) + data layer functions
 - [ ] 06-02-PLAN.md — FastAPI response parser, complaint generator, letter_writer demand/escalation extension
 - [ ] 06-03-PLAN.md — Convex actions: parseResponse, generateDemandLetter, generateEscalationLetter, generateCfpbNarrative
 - [ ] 06-04-PLAN.md — UI: RecordResponseDialog, tracker escalation actions, CFPB tracking, letters page badges
@@ -155,7 +155,7 @@ Plans:
 | 3. AI Analysis & Dispute Review | v1.0 | 4/4 | Complete | 2026-04-04 |
 | 4. Letter Generation | v1.0 | 3/3 | Complete | 2026-04-04 |
 | 5. Tracking & Dashboard | v1.0 | 3/3 | Complete | 2026-04-04 |
-| 6. Bureau Response & Escalation | v1.1 | 0/4 | Not started | - |
+| 6. Bureau Response & Escalation | v1.1 | 1/4 | In Progress|  |
 | 7. Email Notifications | v1.1 | 0/? | Not started | - |
 
 ---

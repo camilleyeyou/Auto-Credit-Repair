@@ -63,17 +63,17 @@ Requirements for Escalation & Notifications milestone. Each maps to roadmap phas
 
 ### Bureau Response Handling
 
-- [ ] **RESP-01**: User can upload a bureau response PDF for a sent dispute
-- [ ] **RESP-02**: AI parses response PDF and extracts outcome (verified, deleted, corrected)
-- [ ] **RESP-03**: User can manually enter dispute outcome without uploading a PDF
-- [ ] **RESP-04**: Dispute item status updates to reflect bureau response (resolved/denied)
+- [x] **RESP-01**: User can upload a bureau response PDF for a sent dispute
+- [x] **RESP-02**: AI parses response PDF and extracts outcome (verified, deleted, corrected)
+- [x] **RESP-03**: User can manually enter dispute outcome without uploading a PDF
+- [x] **RESP-04**: Dispute item status updates to reflect bureau response (resolved/denied)
 
 ### Escalation
 
 - [ ] **ESC-01**: System generates a second demand letter for disputes with no response after 30 days
 - [ ] **ESC-02**: System generates an escalation letter for disputes where bureau verified (denied)
 - [ ] **ESC-03**: System generates a CFPB-ready complaint narrative from dispute history
-- [ ] **ESC-04**: User can track CFPB complaint status and company response timeline
+- [x] **ESC-04**: User can track CFPB complaint status and company response timeline
 
 ### Email Reminders
 
@@ -133,14 +133,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-01 | Phase 5 | Complete |
 | DASH-02 | Phase 5 | Complete |
 | DASH-03 | Phase 5 | Complete |
-| RESP-01 | Phase 6 | Pending |
-| RESP-02 | Phase 6 | Pending |
-| RESP-03 | Phase 6 | Pending |
-| RESP-04 | Phase 6 | Pending |
+| RESP-01 | Phase 6 | Complete |
+| RESP-02 | Phase 6 | Complete |
+| RESP-03 | Phase 6 | Complete |
+| RESP-04 | Phase 6 | Complete |
 | ESC-01 | Phase 6 | Pending |
 | ESC-02 | Phase 6 | Pending |
 | ESC-03 | Phase 6 | Pending |
-| ESC-04 | Phase 6 | Pending |
+| ESC-04 | Phase 6 | Complete |
 | NOTF-01 | Phase 7 | Pending |
 | NOTF-02 | Phase 7 | Pending |
 | NOTF-03 | Phase 7 | Pending |
