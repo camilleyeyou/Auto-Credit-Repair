@@ -71,7 +71,7 @@ Plans:
 - [x] 03-01-PLAN.md — Convex schema extension (dispute_items table, analysisStatus) and data layer functions
 - [x] 03-02-PLAN.md — FastAPI AI analyzer: FCRA library, PII stripping, Claude tool_use, analyze endpoint
 - [x] 03-03-PLAN.md — analyzeReport Convex action (orchestrates FastAPI call, stores dispute items)
-- [ ] 03-04-PLAN.md — Disputes review page, Analyze button on upload page, nav link, middleware
+- [x] 03-04-PLAN.md — Disputes review page, Analyze button on upload page, nav link, middleware
 
 **UI hint**: yes
 
