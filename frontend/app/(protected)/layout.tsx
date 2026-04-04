@@ -37,6 +37,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           <Link href="/upload" className="text-sm text-muted-foreground hover:text-foreground">
             Upload
           </Link>
+          <Link href="/disputes" className="text-sm text-muted-foreground hover:text-foreground">
+            Disputes
+          </Link>
           <Link href="/profile" className="text-sm text-muted-foreground hover:text-foreground">
             Profile
           </Link>

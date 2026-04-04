@@ -8,6 +8,7 @@ const isSignInPage = createRouteMatcher(["/signin"]);
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/upload(.*)",
+  "/disputes(.*)",
   "/profile(.*)",
 ]);
 
