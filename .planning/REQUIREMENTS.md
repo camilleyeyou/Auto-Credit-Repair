@@ -31,9 +31,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Dispute Management
 
-- [ ] **DISP-01**: User can view all AI-flagged items grouped by bureau
-- [ ] **DISP-02**: User can approve or skip each flagged item individually
-- [ ] **DISP-03**: Dispute items track status lifecycle (pending_review → approved → letter_generated → sent → resolved/denied)
+- [x] **DISP-01**: User can view all AI-flagged items grouped by bureau
+- [x] **DISP-02**: User can approve or skip each flagged item individually
+- [x] **DISP-03**: Dispute items track status lifecycle (pending_review → approved → letter_generated → sent → resolved/denied)
 
 ### Letter Generation
 
@@ -109,9 +109,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AI-03 | Phase 3 | Pending |
 | AI-04 | Phase 3 | Pending |
 | AI-05 | Phase 3 | Pending |
-| DISP-01 | Phase 3 | Pending |
-| DISP-02 | Phase 3 | Pending |
-| DISP-03 | Phase 3 | Pending |
+| DISP-01 | Phase 3 | Complete |
+| DISP-02 | Phase 3 | Complete |
+| DISP-03 | Phase 3 | Complete |
 | LTR-01 | Phase 4 | Pending |
 | LTR-02 | Phase 4 | Pending |
 | LTR-03 | Phase 4 | Pending |
