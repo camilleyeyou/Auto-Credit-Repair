@@ -247,3 +247,169 @@ export const getLetterDownloadUrl = query({
     return await ctx.storage.getUrl(letter.storageId);
   },
 });
+
+/**
+ * Public mutation: mark a dispute letter as sent.
+ * Updates dispute_letters with sentAt, certifiedMailNumber, and calculated deadline.
+ * Updates the corresponding dispute_items record status to "sent".
+ * Both patches happen in the same mutation handler (D-22, Pitfall 3).
+ */
+export const markAsSent = mutation({
+  args: {
+    letterId:            v.id("dispute_letters"),
+    sentAt:              v.number(),               // Unix ms from client — the mailing date
+    certifiedMailNumber: v.optional(v.string()),   // USPS certified tracking number
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const letter = await ctx.db.get(args.letterId);
+    if (!letter) throw new Error("Letter not found");
+    if (letter.userId !== identity.subject) throw new Error("Unauthorized");
+
+    // Guard: prevent double-marking (Open Question 3 from RESEARCH.md)
+    if (letter.sentAt !== undefined) {
+      throw new Error("Letter already marked as sent");
+    }
+
+    // D-06: deadline = sentAt + 30 calendar days in ms; NOT Date.now()
+    const deadline = args.sentAt + 30 * 24 * 60 * 60 * 1000;
+
+    // D-03: update dispute_letters tracking fields
+    await ctx.db.patch(args.letterId, {
+      sentAt:              args.sentAt,
+      certifiedMailNumber: args.certifiedMailNumber,
+      deadline,
+    });
+
+    // D-04: update dispute_items status to "sent" — same handler, same transaction
+    await ctx.db.patch(letter.disputeItemId, { status: "sent" as const });
+  },
+});
+
+/**
+ * Public query: return all sent dispute letters with their joined dispute items.
+ * Filters to letters where sentAt is set. Loop-joins to get dispute_items.
+ * Sorted by deadline ascending (most urgent first — D-13).
+ */
+export const getSentLetters = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const letters = await ctx.db
+      .query("dispute_letters")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .filter((q) => q.neq(q.field("sentAt"), undefined))
+      .collect();
+
+    // Loop-join: fetch dispute_item for each letter (established pattern from getApprovedWithoutLetters)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: Array<{ letter: any; item: any }> = [];
+    for (const letter of letters) {
+      const item = await ctx.db.get(letter.disputeItemId);
+      if (item) {
+        results.push({ letter, item });
+      }
+    }
+
+    // Sort by deadline ascending — most urgent first (D-13)
+    results.sort((a, b) => {
+      const da = a.letter.deadline ?? Infinity;
+      const db = b.letter.deadline ?? Infinity;
+      return da - db;
+    });
+
+    return results;
+  },
+});
+
+/**
+ * Public query: return aggregated dashboard statistics for the authenticated user.
+ * Fetches all dispute_items and dispute_letters, computes counts in JS.
+ * Overdue count excludes items already resolved or denied (Pitfall 6 from RESEARCH.md).
+ */
+export const getDashboardStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const allItems = await ctx.db
+      .query("dispute_items")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .collect();
+
+    const allLetters = await ctx.db
+      .query("dispute_letters")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .collect();
+
+    const now = Date.now();
+
+    // Build a map of disputeItemId -> status for fast overdue lookup
+    const itemStatusMap = new Map(allItems.map((item) => [item._id, item.status]));
+
+    const overdue = allLetters.filter((l) => {
+      if (l.deadline === undefined || l.deadline >= now) return false;
+      // Overdue only when the dispute item is still "sent" (waiting, no response)
+      const itemStatus = itemStatusMap.get(l.disputeItemId);
+      return itemStatus === "sent";
+    }).length;
+
+    return {
+      totalDisputes:     allItems.length,
+      lettersGenerated:  allLetters.length,
+      lettersSent:       allLetters.filter((l) => l.sentAt !== undefined).length,
+      responsesReceived: allItems.filter((i) => i.status === "resolved" || i.status === "denied").length,
+      resolved:          allItems.filter((i) => i.status === "resolved").length,
+      overdue,
+    };
+  },
+});
+
+/**
+ * Public query: return letters with deadlines within the next 7 days.
+ * Used for the Upcoming Deadlines section on the dashboard (D-25).
+ * Sorted by deadline ascending (most urgent first).
+ */
+export const getUpcomingDeadlines = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const now = Date.now();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+    // Fetch all sent letters for this user
+    const letters = await ctx.db
+      .query("dispute_letters")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .filter((q) => q.neq(q.field("sentAt"), undefined))
+      .collect();
+
+    // Loop-join and filter to upcoming (not yet past, within 7 days)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: Array<{ letter: any; item: any }> = [];
+    for (const letter of letters) {
+      if (
+        letter.deadline !== undefined &&
+        letter.deadline >= now &&
+        letter.deadline <= now + sevenDaysMs
+      ) {
+        const item = await ctx.db.get(letter.disputeItemId);
+        if (item) {
+          results.push({ letter, item });
+        }
+      }
+    }
+
+    // Sort by deadline ascending — most urgent first
+    results.sort((a, b) => (a.letter.deadline ?? 0) - (b.letter.deadline ?? 0));
+
+    return results;
+  },
+});
