@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Escalation & Notifications
 status: Ready to execute
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-04-04T14:57:19.233Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-04-04T14:58:48.426Z"
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 06 (bureau-response-escalation) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: 2 of 4
 
 *Updated after each plan completion*
 | Phase 06 P01 | 4 | 3 tasks | 3 files |
+| Phase 06 P02 | 10 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 05]: sentAt conversion uses new Date(dateValue + 'T12:00:00').getTime() to avoid UTC midnight off-by-one
 - [Phase 06]: Multiple responses per dispute item allowed — no unique index on bureau_responses.disputeItemId
 - [Phase 06]: outcome unknown/no_response leave dispute_items.status unchanged; saveResponse and saveCfpbComplaint are internalMutations for Plan 02 action callers
+- [Phase 06]: Claude tool_use (tool_choice: any) for response parsing with fallback to outcome=unknown on error
+- [Phase 06]: letter_type branch added inline to generate_letter_body — no refactor of render_letter_html needed
+- [Phase 06]: CFPB narrative uses plain-text Claude (no tool_use) — free-form narrative is intentional
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T14:57:19.228Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-04-04T14:58:48.421Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None

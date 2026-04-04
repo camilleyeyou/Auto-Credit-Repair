@@ -70,9 +70,9 @@ Requirements for Escalation & Notifications milestone. Each maps to roadmap phas
 
 ### Escalation
 
-- [ ] **ESC-01**: System generates a second demand letter for disputes with no response after 30 days
-- [ ] **ESC-02**: System generates an escalation letter for disputes where bureau verified (denied)
-- [ ] **ESC-03**: System generates a CFPB-ready complaint narrative from dispute history
+- [x] **ESC-01**: System generates a second demand letter for disputes with no response after 30 days
+- [x] **ESC-02**: System generates an escalation letter for disputes where bureau verified (denied)
+- [x] **ESC-03**: System generates a CFPB-ready complaint narrative from dispute history
 - [x] **ESC-04**: User can track CFPB complaint status and company response timeline
 
 ### Email Reminders
@@ -137,9 +137,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RESP-02 | Phase 6 | Complete |
 | RESP-03 | Phase 6 | Complete |
 | RESP-04 | Phase 6 | Complete |
-| ESC-01 | Phase 6 | Pending |
-| ESC-02 | Phase 6 | Pending |
-| ESC-03 | Phase 6 | Pending |
+| ESC-01 | Phase 6 | Complete |
+| ESC-02 | Phase 6 | Complete |
+| ESC-03 | Phase 6 | Complete |
 | ESC-04 | Phase 6 | Complete |
 | NOTF-01 | Phase 7 | Pending |
 | NOTF-02 | Phase 7 | Pending |
