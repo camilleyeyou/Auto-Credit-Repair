@@ -11,7 +11,8 @@
  * - "Generate Letters for Approved Items" CTA links to /letters (Phase 4)
  */
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
+import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
@@ -80,6 +81,10 @@ function SkeletonCard() {
 
 export default function DisputesPage() {
   const items = useQuery(api.disputeItems.listByUser);
+  const router = useRouter();
+  const generateLettersAction = useAction(api.letters.generateLetters);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
   const updateStatus = useMutation(api.disputeItems.updateDisputeStatus).withOptimisticUpdate(
     (localStore, args) => {
@@ -252,27 +257,50 @@ export default function DisputesPage() {
       )}
 
       {/* Generate Letters CTA */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-5 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-blue-900">
-            {approvedCount > 0
-              ? `${approvedCount} item${approvedCount !== 1 ? "s" : ""} approved for dispute letters`
-              : "Approve items above to generate dispute letters"}
-          </p>
-          <p className="text-xs text-blue-700 mt-0.5">
-            Letters are generated individually for each bureau.
-          </p>
+      <div className="mt-6 flex flex-col items-start gap-2">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-5 w-full flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-blue-900">
+              {approvedCount > 0
+                ? `${approvedCount} item${approvedCount !== 1 ? "s" : ""} approved for dispute letters`
+                : "Approve items above to generate dispute letters"}
+            </p>
+            <p className="text-xs text-blue-700 mt-0.5">
+              Letters are generated individually for each bureau.
+            </p>
+          </div>
+          <button
+            disabled={approvedCount === 0 || isGenerating}
+            onClick={async () => {
+              setIsGenerating(true);
+              setGenerateError(null);
+              try {
+                await generateLettersAction({});
+                router.push("/letters");
+              } catch (err) {
+                setGenerateError(
+                  err instanceof Error ? err.message : "Letter generation failed. Please try again."
+                );
+              } finally {
+                setIsGenerating(false);
+              }
+            }}
+            className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              approvedCount > 0 && !isGenerating
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            {isGenerating
+              ? "Generating letters..."
+              : approvedCount > 0
+              ? `Generate Letters (${approvedCount} approved items)`
+              : "Generate Letters (no approved items)"}
+          </button>
         </div>
-        <Link
-          href="/letters"
-          className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-            approvedCount > 0
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none"
-          }`}
-        >
-          Generate Letters for Approved Items
-        </Link>
+        {generateError && (
+          <p className="text-sm text-red-600 mt-2">{generateError}</p>
+        )}
       </div>
     </div>
   );
