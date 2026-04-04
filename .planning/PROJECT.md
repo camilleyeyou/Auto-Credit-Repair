@@ -8,29 +8,40 @@ A private, personal AI-powered credit repair tool built for a single user (a fri
 
 Anyone can dispute inaccurate credit report items for free under FCRA — this tool automates knowing *what* to dispute and *how* to write the letters, replacing $50-150/month credit repair services.
 
+## Current Milestone: v1.1 Escalation & Notifications
+
+**Goal:** Complete the dispute lifecycle with escalation workflows, bureau response handling, and proactive email reminders.
+
+**Target features:**
+- Second demand letter for disputes ignored past 30 days
+- Escalation letter for denied disputes
+- CFPB complaint suggestion and guidance
+- Bureau response upload with AI next-round guidance
+- Day 25 email reminders for approaching deadlines (via Resend)
+
 ## Requirements
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ User can upload credit report PDFs (one per bureau) — v1.0 Phase 2
+- ✓ System parses PDF text and normalizes across bureau formats — v1.0 Phase 2
+- ✓ AI analyzes parsed reports and identifies disputable items with FCRA basis — v1.0 Phase 3
+- ✓ User reviews AI-flagged items and approves/skips each one — v1.0 Phase 3
+- ✓ System generates professional, bureau-specific dispute letters — v1.0 Phase 4
+- ✓ Letters download as print-ready PDFs with user info and signature line — v1.0 Phase 4
+- ✓ User's personal info stored via profile page — v1.0 Phase 1
+- ✓ User marks letters as sent with certified mail tracking number — v1.0 Phase 5
+- ✓ System calculates 30-day response deadline with countdown — v1.0 Phase 5
+- ✓ Dashboard shows summary cards, upcoming deadlines, and recent activity — v1.0 Phase 5
+- ✓ Visual timeline tracker with color-coded dispute statuses — v1.0 Phase 5
 
 ### Active
 
-- [ ] User can upload credit report PDFs (one per bureau: Experian, Equifax, TransUnion)
-- [ ] System parses PDF text and normalizes data across all three bureau formats
-- [ ] AI analyzes parsed reports and identifies legally disputable items with FCRA basis
-- [ ] User reviews AI-flagged items and approves/skips each one
-- [ ] System generates professional, bureau-specific dispute letters for approved items
-- [ ] Letters download as print-ready PDFs with user's name, address, and signature line
-- [ ] User's personal info (name, address) stored via a profile/settings page
-- [ ] User marks letters as sent and enters certified mail tracking number
-- [ ] System calculates 30-day response deadline and shows countdown on tracker
-- [ ] Email reminders sent at day 25 for approaching deadlines
-- [ ] Dashboard shows summary cards, upcoming deadlines, and recent activity
-- [ ] Visual timeline tracker with color-coded dispute statuses
-- [ ] If no bureau response by day 30, system flags for follow-up and generates second demand letter
-- [ ] If dispute denied, system generates escalation letter and suggests CFPB complaint
+- [ ] Second demand letter auto-generated for disputes ignored past 30 days
+- [ ] Escalation letter generated for denied disputes
+- [ ] CFPB complaint suggestion and guidance for denied disputes
 - [ ] User can upload bureau response letters for next-round AI guidance
+- [ ] Email reminders sent at day 25 for approaching deadlines via Resend
 
 ### Out of Scope
 
@@ -89,4 +100,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after initialization*
+*Last updated: 2026-04-04 after milestone v1.1 start*
