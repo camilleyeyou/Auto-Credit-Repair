@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 05
-stopped_at: Phase 5 plans created
-last_updated: "2026-04-04T10:08:37.203Z"
+status: Ready to execute
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-04T10:17:08.341Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 19
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 05 (tracking-dashboard) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Plan: 1 of 3
 | Phase 03 P03 | 2 | 1 tasks | 1 files |
 | Phase 04 P01 | 15 | 2 tasks | 9 files |
 | Phase 04 P02 | 2 | 2 tasks | 3 files |
+| Phase 05-tracking-dashboard P01 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,9 @@ Recent decisions affecting current work:
 - [Phase 04]: generateLetters follows analyzeReport action pattern: auth check, env guard, per-item try/catch loop, reactive query for results
 - [Phase 04]: getUserProfile internalQuery casts identity.subject string to Id<users> consistent with existing currentUser pattern
 - [Phase 04]: getApprovedWithoutLetters cross-queries dispute_letters by_dispute_item for D-27 idempotency — no additional boolean flag on dispute_items
+- [Phase 05-tracking-dashboard]: deadline stored at write time in markAsSent (not computed at read time) so queries can filter against it directly
+- [Phase 05-tracking-dashboard]: getDashboardStats uses itemStatusMap for O(1) overdue status checks; overdue excludes resolved/denied items (status must be 'sent')
+- [Phase 05-tracking-dashboard]: markAsSent guards against double-marking: throws if letter.sentAt already set
 
 ### Pending Todos
 
@@ -110,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T10:07:01.060Z
-Stopped at: Phase 5 plans created
-Resume file: .planning/phases/05-tracking-dashboard/05-01-PLAN.md
+Last session: 2026-04-04T10:17:08.335Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None

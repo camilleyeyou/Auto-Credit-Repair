@@ -46,15 +46,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Tracking & Deadlines
 
-- [ ] **TRK-01**: User can mark a letter as sent with send date and certified mail tracking number
-- [ ] **TRK-02**: System calculates 30-day response deadline from send date
-- [ ] **TRK-03**: Tracker page shows visual timeline with color-coded dispute statuses
-- [ ] **TRK-04**: Overdue disputes (past 30 days, no response) highlighted on dashboard and tracker
+- [x] **TRK-01**: User can mark a letter as sent with send date and certified mail tracking number
+- [x] **TRK-02**: System calculates 30-day response deadline from send date
+- [x] **TRK-03**: Tracker page shows visual timeline with color-coded dispute statuses
+- [x] **TRK-04**: Overdue disputes (past 30 days, no response) highlighted on dashboard and tracker
 
 ### Dashboard
 
-- [ ] **DASH-01**: Dashboard shows summary cards (total disputes, letters sent, responses received, resolved)
-- [ ] **DASH-02**: Dashboard shows upcoming deadlines for active disputes
+- [x] **DASH-01**: Dashboard shows summary cards (total disputes, letters sent, responses received, resolved)
+- [x] **DASH-02**: Dashboard shows upcoming deadlines for active disputes
 - [ ] **DASH-03**: Dashboard has quick action buttons (Upload Report, Review Items, Download Letters)
 
 ## v2 Requirements
@@ -118,12 +118,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LTR-04 | Phase 4 | Complete |
 | LTR-05 | Phase 4 | Complete |
 | LTR-06 | Phase 4 | Complete |
-| TRK-01 | Phase 5 | Pending |
-| TRK-02 | Phase 5 | Pending |
-| TRK-03 | Phase 5 | Pending |
-| TRK-04 | Phase 5 | Pending |
-| DASH-01 | Phase 5 | Pending |
-| DASH-02 | Phase 5 | Pending |
+| TRK-01 | Phase 5 | Complete |
+| TRK-02 | Phase 5 | Complete |
+| TRK-03 | Phase 5 | Complete |
+| TRK-04 | Phase 5 | Complete |
+| DASH-01 | Phase 5 | Complete |
+| DASH-02 | Phase 5 | Complete |
 | DASH-03 | Phase 5 | Pending |
 
 **Coverage:**
