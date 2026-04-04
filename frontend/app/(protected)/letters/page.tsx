@@ -33,7 +33,16 @@ interface DisputeLetter {
   sentAt?: number;
   certifiedMailNumber?: string;
   deadline?: number;
+  // Plan 06: letter type for demand/escalation badges
+  letterType?: "initial" | "demand" | "escalation";
 }
+
+// Plan 06: letter type badge configuration
+const LETTER_TYPE_LABEL: Record<string, { label: string; className: string }> = {
+  demand:     { label: "Demand",     className: "bg-orange-100 text-orange-700 border border-orange-200" },
+  escalation: { label: "Escalation", className: "bg-red-100 text-red-700 border border-red-200" },
+  initial:    { label: "Initial",    className: "bg-blue-100 text-blue-700 border border-blue-200" },
+};
 
 const BUREAU_LABELS: Record<Bureau, string> = {
   experian: "Experian",
@@ -172,6 +181,16 @@ function LetterCard({ letter }: { letter: DisputeLetter }) {
           <div>
             <h3 className="font-semibold text-gray-900">{bureauLabel}</h3>
             <p className="text-sm text-gray-500 mt-0.5">Generated {formattedDate}</p>
+            {/* Plan 06: letterType badge — Initial / Demand / Escalation */}
+            {(() => {
+              const typeKey = letter.letterType ?? "initial";
+              const badge = LETTER_TYPE_LABEL[typeKey] ?? LETTER_TYPE_LABEL.initial;
+              return (
+                <span className={`mt-1 inline-block text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>
+                  {badge.label}
+                </span>
+              );
+            })()}
           </div>
           <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
             Dispute Letter
