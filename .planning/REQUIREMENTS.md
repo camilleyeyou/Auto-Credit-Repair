@@ -77,9 +77,9 @@ Requirements for Escalation & Notifications milestone. Each maps to roadmap phas
 
 ### Email Reminders
 
-- [ ] **NOTF-01**: User receives email reminder at day 25 for approaching dispute deadlines
-- [ ] **NOTF-02**: User receives email nudge at day 31 if no bureau response is logged
-- [ ] **NOTF-03**: User can configure email preferences (enable/disable, customize timing)
+- [x] **NOTF-01**: User receives email reminder at day 25 for approaching dispute deadlines
+- [x] **NOTF-02**: User receives email nudge at day 31 if no bureau response is logged
+- [x] **NOTF-03**: User can configure email preferences (enable/disable, customize timing)
 
 ## Out of Scope
 
@@ -141,9 +141,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ESC-02 | Phase 6 | Complete |
 | ESC-03 | Phase 6 | Complete |
 | ESC-04 | Phase 6 | Complete |
-| NOTF-01 | Phase 7 | Pending |
-| NOTF-02 | Phase 7 | Pending |
-| NOTF-03 | Phase 7 | Pending |
+| NOTF-01 | Phase 7 | Complete |
+| NOTF-02 | Phase 7 | Complete |
+| NOTF-03 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 29 total (all complete)
