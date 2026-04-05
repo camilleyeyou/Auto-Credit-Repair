@@ -148,7 +148,7 @@ Plans:
 
 Plans:
 - [x] 07-01-PLAN.md — Schema extension (users email prefs + reminder_log table) + Convex data layer functions
-- [ ] 07-02-PLAN.md — Notification engine: notifications.ts (Resend internalAction) + crons.ts (daily 8 AM UTC scan)
+- [x] 07-02-PLAN.md — Notification engine: notifications.ts (Resend internalAction) + crons.ts (daily 8 AM UTC scan)
 - [x] 07-03-PLAN.md — Profile page email preferences UI + human verification checkpoint
 
 **UI hint**: yes
