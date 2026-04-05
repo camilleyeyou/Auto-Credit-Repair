@@ -144,7 +144,14 @@ Plans:
   1. User receives an email reminder at day 25 for any active dispute approaching its 30-day deadline
   2. User receives an email nudge at day 31 if no bureau response has been logged for a dispute
   3. User can enable or disable email reminders and adjust reminder timing from a preferences page
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Schema extension (users email prefs + reminder_log table) + Convex data layer functions
+- [ ] 07-02-PLAN.md — Notification engine: notifications.ts (Resend internalAction) + crons.ts (daily 8 AM UTC scan)
+- [ ] 07-03-PLAN.md — Profile page email preferences UI + human verification checkpoint
+
+**UI hint**: yes
 
 ## Progress
 
@@ -155,9 +162,9 @@ Plans:
 | 3. AI Analysis & Dispute Review | v1.0 | 4/4 | Complete | 2026-04-04 |
 | 4. Letter Generation | v1.0 | 3/3 | Complete | 2026-04-04 |
 | 5. Tracking & Dashboard | v1.0 | 3/3 | Complete | 2026-04-04 |
-| 6. Bureau Response & Escalation | v1.1 | 3/4 | In Progress|  |
-| 7. Email Notifications | v1.1 | 0/? | Not started | - |
+| 6. Bureau Response & Escalation | v1.1 | 4/4 | Complete | 2026-04-04 |
+| 7. Email Notifications | v1.1 | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-04-03*
-*Last updated: 2026-04-04 — Phase 6 plans created (4 plans, 2 waves)*
+*Last updated: 2026-04-05 — Phase 7 plans created (3 plans, 2 waves)*
