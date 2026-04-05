@@ -19,6 +19,9 @@ export default defineSchema({
     city: v.optional(v.string()),
     state: v.optional(v.string()),
     zip: v.optional(v.string()),
+    // Phase 7 — email notification preferences (D-16, D-18, D-19, D-21)
+    emailRemindersEnabled: v.optional(v.boolean()),  // default true when absent (D-21)
+    reminderEmail: v.optional(v.string()),            // undefined → use auth email (D-19)
   }).index("email", ["email"]),
   credit_reports: defineTable({
     userId: v.string(),
@@ -152,4 +155,11 @@ export default defineSchema({
   })
     .index("by_dispute_item", ["disputeItemId"])
     .index("by_user",         ["userId"]),
+  // Phase 7 — cron de-duplication log (D-22, D-23)
+  reminder_log: defineTable({
+    letterId:     v.id("dispute_letters"),
+    userId:       v.string(),
+    reminderType: v.union(v.literal("day25"), v.literal("day31")),
+    sentAt:       v.number(),  // Unix ms — when reminder was dispatched
+  }).index("by_letter_and_type", ["letterId", "reminderType"]),
 });
