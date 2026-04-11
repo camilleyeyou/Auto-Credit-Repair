@@ -123,4 +123,14 @@ crons.cron(
   {},
 );
 
+// Weekly CFPB reference data refresh — every Sunday at 3am UTC.
+// Triggers a Claude Managed Agent that downloads, parses, and uploads
+// the latest CFPB complaints into cfpb_reference_complaints.
+crons.cron(
+  "weekly-cfpb-refresh",
+  "0 3 * * 0",
+  internal.cfpbPipeline.runCfpbPipeline,
+  {},
+);
+
 export default crons;

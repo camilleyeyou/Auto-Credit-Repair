@@ -155,6 +155,32 @@ export default defineSchema({
   })
     .index("by_dispute_item", ["disputeItemId"])
     .index("by_user",         ["userId"]),
+  // CFPB public complaint reference data (populated by backend/scripts/cfpb_pipeline.py)
+  cfpb_reference_complaints: defineTable({
+    cfpbComplaintId:    v.string(),           // original CFPB complaint ID
+    creditorName:       v.string(),           // company name
+    bureau:             v.optional(v.union(   // detected bureau, if applicable
+      v.literal("experian"),
+      v.literal("equifax"),
+      v.literal("transunion"),
+    )),
+    complaintType:      v.string(),           // normalized type (e.g. "inaccurate_information")
+    resolutionOutcome:  v.string(),           // e.g. "Closed with explanation"
+    complaintNarrative: v.optional(v.string()), // consumer narrative (when available)
+    dateReceived:       v.string(),           // "YYYY-MM-DD"
+    product:            v.string(),           // original CFPB product field
+    issue:              v.string(),           // original CFPB issue field
+    subIssue:           v.optional(v.string()),
+  })
+    .index("by_cfpb_id", ["cfpbComplaintId"])
+    .index("by_creditor", ["creditorName"])
+    .index("by_complaint_type", ["complaintType"])
+    .index("by_bureau", ["bureau"])
+    .searchIndex("search_creditor", { searchField: "creditorName" })
+    .searchIndex("search_narrative", {
+      searchField: "complaintNarrative",
+      filterFields: ["complaintType", "creditorName"],
+    }),
   // Phase 7 — cron de-duplication log (D-22, D-23)
   reminder_log: defineTable({
     letterId:     v.id("dispute_letters"),
