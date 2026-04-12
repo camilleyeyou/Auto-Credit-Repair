@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
+import { PageGuide } from "@/components/onboarding/PageGuide";
 
 type Bureau = "experian" | "equifax" | "transunion";
 type DisputeStatus = "pending_review" | "approved" | "skipped" | "letter_generated" | "sent" | "resolved" | "denied";
@@ -156,6 +157,19 @@ export default function DisputesPage() {
           Review AI-identified disputable items. Approve items to include them in your dispute letters.
         </p>
       </div>
+
+      <PageGuide
+        step="disputes"
+        title="Review what the AI found"
+        tips={[
+          "Each card is an item the AI flagged as potentially inaccurate on your report.",
+          "Click \"Approve\" on items you want to dispute, or \"Skip\" to leave them for now.",
+          "Higher confidence scores (green) are stronger candidates for disputes.",
+          "When you're done, scroll down and click \"Generate Letters\" to create your dispute letters.",
+        ]}
+        nextLabel="After generating, download your letters"
+        nextHref="/letters"
+      />
 
       {/* Bureau filter tabs */}
       <div className="mb-6 flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 w-fit">

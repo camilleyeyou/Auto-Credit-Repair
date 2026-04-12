@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageGuide } from "@/components/onboarding/PageGuide";
 
 export default function ProfilePage() {
   const user = useQuery(api.users.currentUser);
@@ -72,6 +73,18 @@ export default function ProfilePage() {
 
   return (
     <div className="p-8 max-w-xl">
+      <PageGuide
+        step="profile"
+        title="Set up your profile first"
+        tips={[
+          "Enter your full name exactly as it appears on your credit reports.",
+          "Add your mailing address — it goes on every dispute letter you generate.",
+          "Optionally enable email reminders so you never miss a 30-day deadline.",
+        ]}
+        nextLabel="Then upload your credit reports"
+        nextHref="/upload"
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>

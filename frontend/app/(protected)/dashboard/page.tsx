@@ -4,6 +4,8 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
+import { PageGuide } from "@/components/onboarding/PageGuide";
 
 const BUREAU_LABEL: Record<string, string> = {
   experian: "Experian",
@@ -66,11 +68,25 @@ export default function DashboardPage() {
 
   return (
     <div>
+      <WelcomeModal />
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-[#0F172A]">Dashboard</h1>
         <p className="mt-1 text-sm text-slate-500">Your credit repair progress at a glance.</p>
       </div>
+
+      <PageGuide
+        step="dashboard"
+        title="This is your home base"
+        tips={[
+          "Your progress shows up here — disputes, letters sent, and responses.",
+          "Start by clicking Profile in the menu to add your name and address.",
+          "Then go to Upload to add your credit report PDFs.",
+        ]}
+        nextLabel="Set up your profile first"
+        nextHref="/profile"
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 mb-8">

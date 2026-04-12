@@ -18,6 +18,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { Dialog } from "@base-ui/react/dialog";
 import Link from "next/link";
 import { format } from "date-fns";
+import { PageGuide } from "@/components/onboarding/PageGuide";
 
 type Bureau = "experian" | "equifax" | "transunion";
 
@@ -329,6 +330,19 @@ export default function LettersPage() {
           </span>
         </p>
       </div>
+
+      <PageGuide
+        step="letters"
+        title="Your dispute letters are ready"
+        tips={[
+          "Click \"Download PDF\" to save each letter to your computer.",
+          "Print the letters and mail them via USPS Certified Mail (about $4-5 each).",
+          "After mailing, click \"Mark as Sent\" and enter your tracking number.",
+          "This starts the 30-day countdown — the bureau must respond by law.",
+        ]}
+        nextLabel="After mailing, track your disputes"
+        nextHref="/tracker"
+      />
 
       {/* Bureau sections — only render if that bureau has letters */}
       <div className="space-y-8">

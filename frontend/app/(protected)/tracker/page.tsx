@@ -24,6 +24,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { RecordResponseDialog } from "@/components/RecordResponseDialog";
+import { PageGuide } from "@/components/onboarding/PageGuide";
 
 // Tracker entry shape returned by getSentLetters (loop-join of dispute_letters + dispute_items)
 interface TrackerEntry {
@@ -182,6 +183,17 @@ export default function TrackerPage() {
           Track your sent letters and 30-day response windows.
         </p>
       </div>
+
+      <PageGuide
+        step="tracker"
+        title="Monitor your disputes here"
+        tips={[
+          "Each card shows a dispute you mailed — color-coded by urgency (blue = active, yellow = approaching, red = overdue).",
+          "When you receive a response from a bureau, click \"Record Response\" on that card.",
+          "If a bureau misses the 30-day deadline, you can generate a Demand Letter.",
+          "If a bureau denies your dispute, you can escalate with a CFPB complaint.",
+        ]}
+      />
 
       {/* Filter tabs */}
       <div className="flex gap-1 mb-6 border-b border-gray-200">

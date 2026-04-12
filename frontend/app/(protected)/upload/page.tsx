@@ -25,6 +25,7 @@ import {
   type Bureau,
   type LocalStatus,
 } from "@/components/upload/BureauDropZone";
+import { PageGuide } from "@/components/onboarding/PageGuide";
 
 /** Shape of a credit_reports document as returned by listByUser. */
 interface CreditReport {
@@ -160,6 +161,18 @@ export default function UploadPage() {
           .
         </p>
       </div>
+
+      <PageGuide
+        step="upload"
+        title="How to upload your reports"
+        tips={[
+          "Get your free credit reports from annualcreditreport.com (download the PDF versions).",
+          "Drag and drop each PDF onto the matching bureau box below, or click to browse.",
+          "After uploading, click \"Analyze Report\" — the AI will find items you can dispute.",
+        ]}
+        nextLabel="After analysis, review your disputes"
+        nextHref="/disputes"
+      />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {BUREAUS.map((bureau) => (

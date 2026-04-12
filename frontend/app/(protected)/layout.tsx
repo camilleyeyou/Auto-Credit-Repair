@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/SignOutButton";
+import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard", icon: "grid" },
@@ -141,7 +142,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
       {/* Page content */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8">
-        {children}
+        <OnboardingProvider>
+          {children}
+        </OnboardingProvider>
       </main>
     </div>
   );
