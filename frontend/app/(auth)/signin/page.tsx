@@ -6,6 +6,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+/**
+ * Map raw Convex auth errors to friendly messages a non-technical user
+ * can understand and act on.
+ */
+function friendlyError(raw: string, mode: "signIn" | "signUp"): string {
+  const lower = raw.toLowerCase();
+
+  // Account / credential issues
+  if (lower.includes("invalid password") || lower.includes("could not verify"))
+    return "Incorrect email or password. Please try again.";
+  if (lower.includes("invalidaccountid") || lower.includes("no account") || lower.includes("user not found"))
+    return "No account found with that email. Click \"Sign up\" below to create one.";
+  if (lower.includes("already exists") || lower.includes("account already"))
+    return "An account with that email already exists. Try signing in instead.";
+
+  // Password strength
+  if (lower.includes("password") && (lower.includes("short") || lower.includes("weak") || lower.includes("least")))
+    return "Your password is too short. Please use at least 8 characters.";
+
+  // Email format
+  if (lower.includes("invalid email") || lower.includes("email"))
+    return "Please enter a valid email address.";
+
+  // Rate limiting
+  if (lower.includes("rate") || lower.includes("too many"))
+    return "Too many attempts. Please wait a minute and try again.";
+
+  // Network / server
+  if (lower.includes("network") || lower.includes("fetch"))
+    return "Connection problem. Please check your internet and try again.";
+
+  // Generic fallback — still friendly
+  if (mode === "signIn")
+    return "Couldn't sign in. Please check your email and password.";
+  return "Couldn't create your account. Please try again.";
+}
+
 export default function SignInPage() {
   const { signIn } = useAuthActions();
   const [step, setStep] = useState<"signIn" | "signUp">("signIn");
@@ -19,7 +56,8 @@ export default function SignInPage() {
     try {
       await signIn("password", new FormData(e.currentTarget));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed. Check your credentials.");
+      const raw = err instanceof Error ? err.message : String(err);
+      setError(friendlyError(raw, step));
     } finally {
       setLoading(false);
     }
