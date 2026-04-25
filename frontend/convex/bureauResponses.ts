@@ -375,6 +375,98 @@ export const generateDemandLetter = action({
  * - bureauResponseId: the bureau response record (provides outcome/reasonCode context)
  */
 /**
+ * Public action: generate an FDCPA § 1692g debt validation letter for a collection
+ * account. Sent to the COLLECTOR (not a bureau). Requires the user to supply the
+ * collector's name and mailing address (typically printed on collection notices).
+ *
+ * Args:
+ * - disputeItemId: dispute item with itemType="collection"
+ * - collectorName: user-supplied (e.g. "Midland Credit Management")
+ * - collectorAddress: user-supplied multi-line address
+ */
+export const generateValidationLetter = action({
+  args: {
+    disputeItemId:    v.id("dispute_items"),
+    collectorName:    v.string(),
+    collectorAddress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const fastapiUrl = process.env.FASTAPI_URL;
+    if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+    const disputeItem = await ctx.runQuery(internal.disputeItems.getItem, {
+      id: args.disputeItemId,
+    });
+    if (!disputeItem) throw new Error("Dispute item not found");
+    if (disputeItem.userId !== identity.subject) {
+      throw new Error("Unauthorized: you do not own this dispute item");
+    }
+
+    const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
+      userId: identity.subject,
+    });
+    if (
+      !userProfile?.fullName ||
+      !userProfile?.streetAddress ||
+      !userProfile?.city ||
+      !userProfile?.state ||
+      !userProfile?.zip
+    ) {
+      throw new Error(
+        "Profile incomplete — add your name and mailing address in Profile before generating letters",
+      );
+    }
+
+    const letterRequest = {
+      bureau:                disputeItem.bureau,
+      creditor_name:         disputeItem.creditorName,
+      account_number_last4:  disputeItem.accountNumberLast4 ?? undefined,
+      dispute_reason:        disputeItem.disputeReason,
+      fcra_section:          disputeItem.fcraSection,
+      fcra_section_title:    disputeItem.fcraSectionTitle,
+      full_name:             userProfile.fullName,
+      street_address:        userProfile.streetAddress,
+      city:                  userProfile.city,
+      state:                 userProfile.state,
+      zip_code:              userProfile.zip,
+      letter_type:           "validation" as const,
+      collector_name:        args.collectorName,
+      collector_address:     args.collectorAddress,
+    };
+
+    const response = await fetch(`${fastapiUrl}/api/letters/generate`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(letterRequest),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json() as { letter_html: string; pdf_base64: string };
+    const pdfBytes = Uint8Array.from(atob(result.pdf_base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const storageId = await ctx.storage.store(blob);
+
+    await ctx.runMutation(internal.letters.saveLetter, {
+      disputeItemId:    args.disputeItemId,
+      userId:           identity.subject,
+      bureau:           disputeItem.bureau,
+      letterContent:    result.letter_html,
+      storageId,
+      letterType:       "validation",
+      collectorName:    args.collectorName,
+      collectorAddress: args.collectorAddress,
+    });
+  },
+});
+
+/**
  * Public action: generate a Method of Verification (MOV) letter for a dispute item
  * the bureau verified. Per FCRA § 611(a)(6)(B)(iii) and § 611(a)(7), the consumer
  * has the right to demand the bureau describe the procedure used to verify,

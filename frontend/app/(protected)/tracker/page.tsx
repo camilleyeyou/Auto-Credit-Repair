@@ -24,6 +24,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { RecordResponseDialog } from "@/components/RecordResponseDialog";
+import { Dialog } from "@base-ui/react/dialog";
 import { PageGuide } from "@/components/onboarding/PageGuide";
 
 // Tracker entry shape returned by getSentLetters (loop-join of dispute_letters + dispute_items)
@@ -44,6 +45,7 @@ interface TrackerEntry {
     disputeReason: string;
     status: string;
     accountNumberLast4?: string;
+    itemType?: string;
   };
 }
 
@@ -106,6 +108,7 @@ export default function TrackerPage() {
   const generateDemandLetter = useAction(api.bureauResponses.generateDemandLetter);
   const generateEscalationLetter = useAction(api.bureauResponses.generateEscalationLetter);
   const generateMovLetter = useAction(api.bureauResponses.generateMovLetter);
+  const generateValidationLetter = useAction(api.bureauResponses.generateValidationLetter);
   const generateCfpbNarrative = useAction(api.cfpbComplaints.generateCfpbNarrative);
   const updateCfpbStatus = useMutation(api.cfpbComplaints.updateCfpbStatus);
 
@@ -114,6 +117,10 @@ export default function TrackerPage() {
   const [generatingDemand, setGeneratingDemand] = useState<string | null>(null);
   const [generatingEscalation, setGeneratingEscalation] = useState<string | null>(null);
   const [generatingMov, setGeneratingMov] = useState<string | null>(null);
+  const [generatingValidation, setGeneratingValidation] = useState<string | null>(null);
+  const [validationDialogOpen, setValidationDialogOpen] = useState<string | null>(null);
+  const [collectorName, setCollectorName] = useState("");
+  const [collectorAddress, setCollectorAddress] = useState("");
   const [generatingCfpb, setGeneratingCfpb] = useState<string | null>(null);
   const [expandedCfpb, setExpandedCfpb] = useState<string | null>(null);
   const [actionError, setActionError] = useState<Record<string, string>>({});
@@ -418,6 +425,25 @@ export default function TrackerPage() {
                     </div>
                   )}
 
+                  {/* FDCPA § 1692g debt validation — only for collection items */}
+                  {item.itemType === "collection" && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearItemError(item._id);
+                          setCollectorName(item.creditorName);
+                          setCollectorAddress("");
+                          setValidationDialogOpen(item._id);
+                        }}
+                        className="inline-flex items-center rounded-md border border-teal-300 bg-teal-50 px-3 py-1.5 text-sm font-medium text-teal-700 hover:bg-teal-100 transition-colors"
+                        title="Send FDCPA § 1692g debt validation to the collector"
+                      >
+                        Send Debt Validation Letter (FDCPA)
+                      </button>
+                    </div>
+                  )}
+
                   {/* CFPB section — show for denied disputes */}
                   {showCfpb && response && (
                     <div className="rounded-md border border-purple-200 bg-purple-50 p-3 space-y-2">
@@ -513,6 +539,92 @@ export default function TrackerPage() {
                     bureau={item.bureau as "experian" | "equifax" | "transunion"}
                     onClose={() => setOpenResponseDialogId(null)}
                   />
+                )}
+
+                {/* FDCPA Validation Letter Dialog */}
+                {validationDialogOpen === item._id && (
+                  <Dialog.Root
+                    open
+                    onOpenChange={(open) => {
+                      if (!open) setValidationDialogOpen(null);
+                    }}
+                  >
+                    <Dialog.Portal>
+                      <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
+                      <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl">
+                        <Dialog.Title className="text-lg font-semibold text-slate-900">
+                          Send Debt Validation Letter
+                        </Dialog.Title>
+                        <p className="mt-1 text-sm text-slate-500">
+                          This FDCPA § 1692g letter will be sent to the <strong>collector</strong>, not the credit bureau. Find the collector&apos;s mailing address on the most recent collection notice you received.
+                        </p>
+
+                        <div className="mt-4 space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">
+                              Collector Name
+                            </label>
+                            <input
+                              type="text"
+                              value={collectorName}
+                              onChange={(e) => setCollectorName(e.target.value)}
+                              placeholder="Midland Credit Management"
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">
+                              Collector Mailing Address
+                            </label>
+                            <textarea
+                              value={collectorAddress}
+                              onChange={(e) => setCollectorAddress(e.target.value)}
+                              placeholder="2365 Northside Drive&#10;Suite 300&#10;San Diego, CA 92108"
+                              rows={4}
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-mono focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                            <p className="mt-1 text-xs text-slate-400">
+                              Include street, city, state, and ZIP. One field per line.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-5 flex justify-end gap-2">
+                          <Dialog.Close className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            Cancel
+                          </Dialog.Close>
+                          <button
+                            type="button"
+                            disabled={
+                              !collectorName.trim() ||
+                              !collectorAddress.trim() ||
+                              generatingValidation === item._id
+                            }
+                            onClick={async () => {
+                              clearItemError(item._id);
+                              setGeneratingValidation(item._id);
+                              try {
+                                await generateValidationLetter({
+                                  disputeItemId: item._id as Id<"dispute_items">,
+                                  collectorName: collectorName.trim(),
+                                  collectorAddress: collectorAddress.trim(),
+                                });
+                                setValidationDialogOpen(null);
+                              } catch (err: unknown) {
+                                const msg = err instanceof Error ? err.message : "Failed to generate validation letter.";
+                                setItemError(item._id, msg);
+                              } finally {
+                                setGeneratingValidation(null);
+                              }
+                            }}
+                            className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+                          >
+                            {generatingValidation === item._id ? "Generating..." : "Generate Letter"}
+                          </button>
+                        </div>
+                      </Dialog.Popup>
+                    </Dialog.Portal>
+                  </Dialog.Root>
                 )}
               </div>
             );

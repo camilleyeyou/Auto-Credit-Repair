@@ -241,6 +241,21 @@ export default function DisputesPage() {
         nextHref="/letters"
       />
 
+      {/* Aging-off strategy warning — collections age off after 7 years from DOFD */}
+      <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <div className="flex items-start gap-3">
+          <svg className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          <div className="text-sm text-amber-900">
+            <p className="font-semibold mb-1">Heads up about old items</p>
+            <p>
+              Negative items typically age off your credit report automatically — collections and charge-offs after <strong>7 years from the first delinquency</strong>, bankruptcies after <strong>10 years</strong>. If an item is more than 6 years old, consider <em>not</em> disputing it. Disputing can sometimes prompt the furnisher to update dates and extend its visibility window. Skip those items unless they have a clear inaccuracy.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Bureau filter tabs */}
       <div className="mb-6 flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 w-fit">
         {(["all", ...BUREAUS] as TabValue[]).map((tab) => (

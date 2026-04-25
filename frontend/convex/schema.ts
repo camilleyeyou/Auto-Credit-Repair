@@ -103,8 +103,12 @@ export default defineSchema({
       v.literal("initial"),
       v.literal("demand"),
       v.literal("escalation"),
-      v.literal("mov"),  // Method of Verification — § 1681i(a)(6)(B)(iii)
+      v.literal("mov"),         // Method of Verification — § 1681i(a)(6)(B)(iii)
+      v.literal("validation"),  // FDCPA § 1692g debt validation (to collector, not bureau)
     )),
+    // FDCPA validation: collector address & contact (manually entered, not bureau)
+    collectorName:    v.optional(v.string()),
+    collectorAddress: v.optional(v.string()),
   })
     .index("by_user",         ["userId"])
     .index("by_dispute_item", ["disputeItemId"])

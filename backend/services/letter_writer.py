@@ -67,6 +67,24 @@ DEMAND_SYSTEM_PROMPT = (
     "7. One paragraph, 3-5 sentences."
 )
 
+VALIDATION_SYSTEM_PROMPT = (
+    "You are a debt validation letter writer. Write a single professional paragraph "
+    "for a Fair Debt Collection Practices Act (FDCPA) § 1692g debt validation request. "
+    "This letter is sent to a debt COLLECTOR (not a credit bureau) demanding that the "
+    "collector validate the debt before continuing collection or reporting it to bureaus. "
+    "Rules: "
+    "1. Cite FDCPA § 1692g (15 U.S.C. § 1692g). "
+    "2. State that the consumer disputes the debt and requests validation, including: "
+    "   (a) the amount of the debt, (b) the name of the original creditor, (c) verification "
+    "   that the collector has the right to collect, (d) a copy of the original signed agreement. "
+    "3. Note that under § 1692e(8), continuing to report this debt to credit bureaus while "
+    "   disputed without marking it as disputed is a potential FDCPA violation. "
+    "4. Demand all collection activity (calls, letters, credit reporting) cease until validation is provided. "
+    "5. Use firm but polite tone. "
+    "6. NEVER guarantee removal — use hedged language only. "
+    "7. One paragraph, 4-6 sentences. No headers or salutations."
+)
+
 MOV_SYSTEM_PROMPT = (
     "You are a credit dispute follow-up letter writer. Write a single professional paragraph "
     "for a Method of Verification (MOV) letter under FCRA § 611(a)(6)(B)(iii) and § 611(a)(7) "
@@ -130,13 +148,15 @@ async def generate_letter_body(request: LetterRequest) -> str:
             f"Must be one of: {list(BUREAU_ADDRESSES.keys())}"
         )
 
-    # Branch on letter_type for demand/escalation/mov — per Phase 6 / MOV plan
+    # Branch on letter_type for demand/escalation/mov/validation — per Phase 6 / MOV / FDCPA plan
     if request.letter_type == "demand":
         system_prompt = DEMAND_SYSTEM_PROMPT
     elif request.letter_type == "escalation":
         system_prompt = ESCALATION_SYSTEM_PROMPT
     elif request.letter_type == "mov":
         system_prompt = MOV_SYSTEM_PROMPT
+    elif request.letter_type == "validation":
+        system_prompt = VALIDATION_SYSTEM_PROMPT
     else:
         system_prompt = LETTER_SYSTEM_PROMPT
 
@@ -161,6 +181,9 @@ async def generate_letter_body(request: LetterRequest) -> str:
             user_message += f"Original dispute sent date: {request.original_sent_date}\n"
         if request.bureau_outcome_summary:
             user_message += f"Bureau verification outcome: {request.bureau_outcome_summary}\n"
+    if request.letter_type == "validation":
+        if request.collector_name:
+            user_message += f"Debt collector: {request.collector_name}\n"
 
     # Opus 4.7 with extended thinking — drafts persuasive, FCRA-grounded letters.
     # Budget reasoning so each letter is tailored, not boilerplate.
@@ -202,13 +225,22 @@ def render_letter_html(request: LetterRequest, body_paragraph: str) -> str:
     Raises:
         ValueError: If request.bureau is not in BUREAU_ADDRESSES.
     """
-    if request.bureau not in BUREAU_ADDRESSES:
-        raise ValueError(
-            f"Unknown bureau: {request.bureau!r}. "
-            f"Must be one of: {list(BUREAU_ADDRESSES.keys())}"
-        )
-
-    bureau_display_name, bureau_address_raw = BUREAU_ADDRESSES[request.bureau]
+    # FDCPA validation letters go to the collector, not the bureau.
+    # Use user-supplied collector address; fall back to bureau if missing.
+    if request.letter_type == "validation":
+        if not request.collector_name or not request.collector_address:
+            raise ValueError(
+                "FDCPA validation letters require collector_name and collector_address",
+            )
+        bureau_display_name = request.collector_name
+        bureau_address_raw = request.collector_address
+    else:
+        if request.bureau not in BUREAU_ADDRESSES:
+            raise ValueError(
+                f"Unknown bureau: {request.bureau!r}. "
+                f"Must be one of: {list(BUREAU_ADDRESSES.keys())}"
+            )
+        bureau_display_name, bureau_address_raw = BUREAU_ADDRESSES[request.bureau]
 
     # Format date as "April 3, 2026" — cross-platform safe
     today = datetime.now()

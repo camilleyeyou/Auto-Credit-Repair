@@ -24,10 +24,14 @@ class LetterRequest(BaseModel):
     city: str
     state: str
     zip_code: str
-    # Phase 6 extension — letter type for demand/escalation branches
-    letter_type: Optional[str] = None           # "initial" | "demand" | "escalation"
+    # Phase 6 extension — letter type for demand/escalation/mov/validation branches
+    letter_type: Optional[str] = None           # "initial" | "demand" | "escalation" | "mov" | "validation"
     original_sent_date: Optional[str] = None    # ISO date, used in demand letter narrative
     bureau_outcome_summary: Optional[str] = None  # used in escalation letter narrative
+    # FDCPA validation letter — sent to the collector, not the bureau.
+    # Address is user-supplied via the validation dialog.
+    collector_name:    Optional[str] = None
+    collector_address: Optional[str] = None     # multi-line address (use \n)
 
 
 class LetterResponse(BaseModel):

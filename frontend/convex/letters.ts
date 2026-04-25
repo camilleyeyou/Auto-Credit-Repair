@@ -82,7 +82,10 @@ export const saveLetter = internalMutation({
       v.literal("demand"),
       v.literal("escalation"),
       v.literal("mov"),
+      v.literal("validation"),
     )),
+    collectorName:    v.optional(v.string()),
+    collectorAddress: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await ctx.db.insert("dispute_letters", {
@@ -93,6 +96,8 @@ export const saveLetter = internalMutation({
       storageId:     args.storageId,
       generatedAt:   Date.now(),
       letterType:    args.letterType,
+      collectorName: args.collectorName,
+      collectorAddress: args.collectorAddress,
     });
   },
 });

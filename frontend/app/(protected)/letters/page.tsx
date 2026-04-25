@@ -34,8 +34,8 @@ interface DisputeLetter {
   sentAt?: number;
   certifiedMailNumber?: string;
   deadline?: number;
-  // Plan 06: letter type for demand/escalation badges (mov added in MOV phase)
-  letterType?: "initial" | "demand" | "escalation" | "mov";
+  // Plan 06: letter type for demand/escalation badges (mov + validation added in escalation phase)
+  letterType?: "initial" | "demand" | "escalation" | "mov" | "validation";
 }
 
 // Plan 06: letter type badge configuration
@@ -44,6 +44,7 @@ const LETTER_TYPE_LABEL: Record<string, { label: string; className: string }> = 
   escalation: { label: "Escalation", className: "bg-red-100 text-red-700 border border-red-200" },
   initial:    { label: "Initial",    className: "bg-blue-100 text-blue-700 border border-blue-200" },
   mov:        { label: "MOV",        className: "bg-indigo-100 text-indigo-700 border border-indigo-200" },
+  validation: { label: "FDCPA Validation", className: "bg-teal-100 text-teal-700 border border-teal-200" },
 };
 
 const BUREAU_LABELS: Record<Bureau, string> = {
