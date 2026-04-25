@@ -81,6 +81,7 @@ export const saveLetter = internalMutation({
       v.literal("initial"),
       v.literal("demand"),
       v.literal("escalation"),
+      v.literal("mov"),
     )),
   },
   handler: async (ctx, args) => {

@@ -103,6 +103,7 @@ export default defineSchema({
       v.literal("initial"),
       v.literal("demand"),
       v.literal("escalation"),
+      v.literal("mov"),  // Method of Verification — § 1681i(a)(6)(B)(iii)
     )),
   })
     .index("by_user",         ["userId"])

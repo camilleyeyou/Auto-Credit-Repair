@@ -67,6 +67,26 @@ DEMAND_SYSTEM_PROMPT = (
     "7. One paragraph, 3-5 sentences."
 )
 
+MOV_SYSTEM_PROMPT = (
+    "You are a credit dispute follow-up letter writer. Write a single professional paragraph "
+    "for a Method of Verification (MOV) letter under FCRA § 611(a)(6)(B)(iii) and § 611(a)(7) "
+    "(15 U.S.C. § 1681i). The bureau verified the disputed item — but FCRA gives the consumer "
+    "the right to demand the bureau describe the procedure used to verify, including the "
+    "name, address, and telephone number of every furnisher contacted, within 15 days. "
+    "Rules: "
+    "1. Reference the original dispute and the bureau's verification response. "
+    "2. Cite FCRA § 611(a)(6)(B)(iii) and § 611(a)(7) (15 U.S.C. § 1681i) requesting "
+    "   a description of the procedure used to determine the accuracy of the disputed item. "
+    "3. Specifically request: (a) name/address/telephone of every furnisher contacted, "
+    "   (b) copies of all documents the bureau relied on, (c) date the verification was made. "
+    "4. Note that the bureau has 15 days to provide this information. "
+    "5. Do NOT re-dispute the underlying item in this letter — this is a procedural request. "
+    "6. Use firm but polite tone. "
+    "7. NEVER guarantee removal — use hedged language only. "
+    "8. Do NOT state what the bureau is 'legally required' to do — use procedural language only. "
+    "9. One paragraph, 4-6 sentences."
+)
+
 ESCALATION_SYSTEM_PROMPT = (
     "You are a credit dispute escalation letter writer. Write a single professional paragraph "
     "for a formal escalation letter under the Fair Credit Reporting Act (FCRA). "
@@ -110,11 +130,13 @@ async def generate_letter_body(request: LetterRequest) -> str:
             f"Must be one of: {list(BUREAU_ADDRESSES.keys())}"
         )
 
-    # Branch on letter_type for demand/escalation — per Phase 6 plan
+    # Branch on letter_type for demand/escalation/mov — per Phase 6 / MOV plan
     if request.letter_type == "demand":
         system_prompt = DEMAND_SYSTEM_PROMPT
     elif request.letter_type == "escalation":
         system_prompt = ESCALATION_SYSTEM_PROMPT
+    elif request.letter_type == "mov":
+        system_prompt = MOV_SYSTEM_PROMPT
     else:
         system_prompt = LETTER_SYSTEM_PROMPT
 
@@ -129,11 +151,16 @@ async def generate_letter_body(request: LetterRequest) -> str:
         f"FCRA basis: {request.fcra_section_usc} ({request.fcra_section_title})\n"
     )
 
-    # Add context fields for demand/escalation letter types
+    # Add context fields for demand/escalation/mov letter types
     if request.letter_type == "demand" and request.original_sent_date:
         user_message += f"Original dispute sent date: {request.original_sent_date}\n"
     if request.letter_type == "escalation" and request.bureau_outcome_summary:
         user_message += f"Bureau outcome summary: {request.bureau_outcome_summary}\n"
+    if request.letter_type == "mov":
+        if request.original_sent_date:
+            user_message += f"Original dispute sent date: {request.original_sent_date}\n"
+        if request.bureau_outcome_summary:
+            user_message += f"Bureau verification outcome: {request.bureau_outcome_summary}\n"
 
     # Opus 4.7 with extended thinking — drafts persuasive, FCRA-grounded letters.
     # Budget reasoning so each letter is tailored, not boilerplate.

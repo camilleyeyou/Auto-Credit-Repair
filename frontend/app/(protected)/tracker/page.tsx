@@ -105,6 +105,7 @@ export default function TrackerPage() {
   // Phase 6: actions and mutations
   const generateDemandLetter = useAction(api.bureauResponses.generateDemandLetter);
   const generateEscalationLetter = useAction(api.bureauResponses.generateEscalationLetter);
+  const generateMovLetter = useAction(api.bureauResponses.generateMovLetter);
   const generateCfpbNarrative = useAction(api.cfpbComplaints.generateCfpbNarrative);
   const updateCfpbStatus = useMutation(api.cfpbComplaints.updateCfpbStatus);
 
@@ -112,6 +113,7 @@ export default function TrackerPage() {
   const [openResponseDialogId, setOpenResponseDialogId] = useState<string | null>(null);
   const [generatingDemand, setGeneratingDemand] = useState<string | null>(null);
   const [generatingEscalation, setGeneratingEscalation] = useState<string | null>(null);
+  const [generatingMov, setGeneratingMov] = useState<string | null>(null);
   const [generatingCfpb, setGeneratingCfpb] = useState<string | null>(null);
   const [expandedCfpb, setExpandedCfpb] = useState<string | null>(null);
   const [actionError, setActionError] = useState<Record<string, string>>({});
@@ -252,6 +254,7 @@ export default function TrackerPage() {
             const isOverdueNoResponse =
               item.status === "sent" && days < 0 && !hasResponse;
             const showEscalation = isDenied;
+            const showMov = isDenied; // MOV demand sent in parallel with escalation per § 611(a)(6)(B)(iii)
             const showCfpb = isDenied; // show after denied response
 
             return (
@@ -382,6 +385,35 @@ export default function TrackerPage() {
                         className="inline-flex items-center rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         {generatingEscalation === item._id ? "Generating..." : "Generate Escalation Letter"}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Generate MOV (Method of Verification) Letter — denied */}
+                  {showMov && response && (
+                    <div>
+                      <button
+                        type="button"
+                        disabled={generatingMov === item._id}
+                        onClick={async () => {
+                          clearItemError(item._id);
+                          setGeneratingMov(item._id);
+                          try {
+                            await generateMovLetter({
+                              disputeItemId: item._id as Id<"dispute_items">,
+                              bureauResponseId: response._id,
+                            });
+                          } catch (err: unknown) {
+                            const msg = err instanceof Error ? err.message : "Failed to generate MOV letter.";
+                            setItemError(item._id, msg);
+                          } finally {
+                            setGeneratingMov(null);
+                          }
+                        }}
+                        className="inline-flex items-center rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                        title="Demand the bureau describe its verification procedure under FCRA § 611(a)(6)(B)(iii)"
+                      >
+                        {generatingMov === item._id ? "Generating..." : "Demand Method of Verification"}
                       </button>
                     </div>
                   )}
