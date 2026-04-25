@@ -80,8 +80,17 @@ function SkeletonCard() {
   );
 }
 
+interface CreditReportSummary {
+  _id: Id<"credit_reports">;
+  bureau: Bureau;
+  parseStatus: "uploaded" | "parsing" | "done" | "failed" | "image_only";
+  analysisStatus?: "not_analyzed" | "analyzing" | "analyzed" | "analysis_failed";
+  analysisErrorMessage?: string;
+}
+
 export default function DisputesPage() {
   const items = useQuery(api.disputeItems.listByUser);
+  const reports = useQuery(api.creditReports.listByUser);
   const router = useRouter();
   const generateLettersAction = useAction(api.letters.generateLetters);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -106,7 +115,7 @@ export default function DisputesPage() {
   const [activeBureau, setActiveBureau] = useState<TabValue>("all");
 
   // Loading state
-  if (items === undefined) {
+  if (items === undefined || reports === undefined) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Dispute Review</h1>
@@ -120,22 +129,83 @@ export default function DisputesPage() {
   }
 
   const typedItems = items as DisputeItem[];
+  const typedReports = reports as CreditReportSummary[];
 
-  // Empty state — no items at all
+  // Smart empty state — figure out what's actually going on
   if (typedItems.length === 0) {
+    const hasReports = typedReports.length > 0;
+    const parsing = typedReports.some(
+      (r) => r.parseStatus === "uploaded" || r.parseStatus === "parsing",
+    );
+    const analyzing = typedReports.some(
+      (r) => r.analysisStatus === "analyzing",
+    );
+    const analyzed = typedReports.some((r) => r.analysisStatus === "analyzed");
+    const analysisFailed = typedReports.find(
+      (r) => r.analysisStatus === "analysis_failed",
+    );
+    const parsedNotAnalyzed = typedReports.some(
+      (r) =>
+        r.parseStatus === "done" &&
+        (!r.analysisStatus || r.analysisStatus === "not_analyzed"),
+    );
+
+    let title = "No dispute items yet.";
+    let message = "Upload and analyze your credit reports to get started.";
+    let ctaLabel = "Go to Upload";
+    let ctaHref = "/upload";
+    let tone: "default" | "success" | "warning" = "default";
+
+    if (!hasReports) {
+      // No reports — point to upload
+    } else if (parsing) {
+      title = "Reading your report…";
+      message = "We're parsing the PDF. This usually takes 10-30 seconds.";
+      ctaLabel = "Check upload status";
+    } else if (analyzing) {
+      title = "Analyzing your report…";
+      message = "The AI is reviewing your report for disputable items. This takes about 30 seconds.";
+      ctaLabel = "Check upload status";
+    } else if (parsedNotAnalyzed) {
+      title = "Almost there.";
+      message = "Your report is uploaded — click \"Analyze Report\" on the Upload page to scan for disputable items.";
+      ctaLabel = "Go to Upload";
+    } else if (analysisFailed) {
+      title = "Analysis didn't finish.";
+      message = analysisFailed.analysisErrorMessage
+        ? `Something went wrong: ${analysisFailed.analysisErrorMessage}`
+        : "Something went wrong during analysis. Try clicking \"Retry Analysis\" on the Upload page.";
+      ctaLabel = "Retry on Upload page";
+      tone = "warning";
+    } else if (analyzed) {
+      title = "Good news — no disputable items found.";
+      message = "The AI scanned your report and didn't flag any items as inaccurate or disputable. This often means your report looks clean. You can re-run analysis anytime if new items appear.";
+      ctaLabel = "Back to Upload";
+      tone = "success";
+    }
+
+    const toneStyles = {
+      default: "border-gray-200 bg-white",
+      success: "border-emerald-200 bg-emerald-50",
+      warning: "border-amber-200 bg-amber-50",
+    }[tone];
+    const titleColor = {
+      default: "text-gray-700",
+      success: "text-emerald-800",
+      warning: "text-amber-800",
+    }[tone];
+
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Dispute Review</h1>
-        <div className="rounded-lg border border-gray-200 bg-white p-10 text-center shadow-sm">
-          <p className="text-gray-600 mb-2">No dispute items yet.</p>
-          <p className="text-sm text-gray-500 mb-4">
-            Upload and analyze your credit reports to get started.
-          </p>
+        <div className={`rounded-lg border ${toneStyles} p-10 text-center shadow-sm`}>
+          <p className={`font-semibold mb-2 ${titleColor}`}>{title}</p>
+          <p className="text-sm text-gray-600 mb-5 max-w-md mx-auto">{message}</p>
           <Link
-            href="/upload"
+            href={ctaHref}
             className="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
-            Go to Upload
+            {ctaLabel}
           </Link>
         </div>
       </div>

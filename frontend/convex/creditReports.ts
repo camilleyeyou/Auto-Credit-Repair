@@ -291,11 +291,15 @@ export const analyzeReport = action({
         reused: boolean;
       };
 
-      // Map snake_case FastAPI response to camelCase Convex schema fields
+      // Map snake_case FastAPI response to camelCase Convex schema fields.
+      // Strip null values from optional fields — Convex v.optional() rejects null
+      // (only accepts undefined/absent). Pydantic serializes Optional[str] as null.
       const itemsForConvex = result.dispute_items.map((item) => ({
         itemType: item.item_type,
         creditorName: item.creditor_name,
-        accountNumberLast4: item.account_number_last4,
+        ...(item.account_number_last4
+          ? { accountNumberLast4: item.account_number_last4 }
+          : {}),
         description: item.description,
         disputeReason: item.dispute_reason,
         fcraSection: item.fcra_section,
