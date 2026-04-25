@@ -69,8 +69,9 @@ async def generate_complaint(request: ComplaintRequest) -> ComplaintResponse:
 
     user_message = "\n".join(user_message_parts)
 
+    # Sonnet 4.6 — drafts CFPB complaint narratives (factual, hedged language).
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=1024,
         system=COMPLAINT_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": user_message}],

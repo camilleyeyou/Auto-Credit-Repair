@@ -64,12 +64,16 @@ FCRA_SECTION_ENUM = list(FCRA_LIBRARY.keys())  # ["611", "623", "605", "609", "6
 ANALYZE_TOOL = {
     "name": "report_dispute_items",
     "description": (
-        "Analyze a consumer credit report and flag only genuine FCRA-disputable items. "
-        "Use hedged language — never guarantee removal of any item. "
-        "Use only the provided fcra_section values. "
-        "Provide item-specific, individualized dispute reasoning for each flagged item. "
-        "Do not flag items that are accurate and timely; only flag items that appear "
-        "inaccurate, unverifiable, obsolete, or otherwise legally disputable under the FCRA."
+        "Analyze a consumer credit report and flag items with a SPECIFIC, ARTICULABLE "
+        "factual reason to dispute. Bureaus dismiss generic shotgun disputes as frivolous "
+        "under FCRA § 611(a)(3) — vague disputes never start the 30-day investigation clock. "
+        "Each flagged item must have a concrete, item-specific reason: wrong balance, "
+        "wrong dates, not the consumer's account, paid but reported open, duplicate "
+        "tradeline, mixed file, obsolete under § 605, or identity theft. "
+        "Skip items that are accurate and timely with no factual angle for dispute. "
+        "Cap output at 5 items per bureau per round — quality over quantity. "
+        "Use hedged language — never guarantee removal. "
+        "Use only the provided fcra_section values."
     ),
     "input_schema": {
         "type": "object",
@@ -153,17 +157,50 @@ ANALYZE_TOOL = {
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = (
-    "You are a credit report analysis assistant. Your job is to review a consumer's "
-    "credit report data and identify items that may be legally disputable under the "
-    "Fair Credit Reporting Act (FCRA).\n\n"
-    "Rules:\n"
-    "1. Only flag items that appear inaccurate, unverifiable, or obsolete under the FCRA.\n"
-    "2. Use hedged language — never guarantee that a dispute will result in removal.\n"
-    "3. Provide item-specific, individualized dispute reasoning for each item.\n"
-    "4. For § 605 obsolete item disputes, calculate from `date_of_first_delinquency`. "
-    "If that field is null or missing, note it as unverifiable rather than assuming the item is current.\n"
-    "5. Use only the FCRA section values provided in the tool schema.\n"
-    "6. Do not flag items that are accurate and timely."
+    "You are a careful, strategic credit repair analyst. Your job is to identify items "
+    "on a consumer's credit report that have a SPECIFIC, ARTICULABLE factual basis for "
+    "dispute — not blanket challenges to every negative item.\n\n"
+    "## Critical strategic context\n\n"
+    "FCRA § 611(a)(3) lets bureaus dismiss disputes that are 'frivolous or irrelevant.' "
+    "Shotgun disputes (challenging every negative item without specific reasons) are the #1 "
+    "thing bureau fraud filters target. They never start the 30-day investigation clock — "
+    "they get suppressed within 5 days. Quality beats quantity every time.\n\n"
+    "## What makes a strong dispute\n\n"
+    "Flag an item ONLY when you can articulate a concrete, factual reason from the data:\n"
+    "1. **Inaccurate data** — balance doesn't match payment history, dates inconsistent, "
+    "status conflicts with payment record (e.g., reported open but last payment 3 years ago)\n"
+    "2. **Obsolete under § 605** — collections/charge-offs >7 years + 180 days from "
+    "date_of_first_delinquency; bankruptcies >10 years old\n"
+    "3. **Missing required fields** — no date_of_first_delinquency on a negative tradeline "
+    "(furnisher cannot verify obsolescence)\n"
+    "4. **Duplicate tradeline** — same account appearing twice\n"
+    "5. **Identity discrepancies** — creditor name unfamiliar, account opened during a known "
+    "identity-theft window (this needs the consumer's input, so flag for their review)\n"
+    "6. **Hard inquiries** — only flag inquiries within 24 months that lack a clear "
+    "matching tradeline (suggesting unauthorized inquiry)\n\n"
+    "## What NOT to flag\n\n"
+    "- Accurate, timely negative items with no factual angle to challenge\n"
+    "- Positive accounts in good standing\n"
+    "- Items where you can't point to a specific data inconsistency\n\n"
+    "## Output rules\n\n"
+    "1. **Cap: maximum 5 items per analysis.** Bureaus correlate dispute volume with "
+    "frivolous-flag risk. Pick the 5 with strongest factual angles.\n"
+    "2. Each item must have item-specific reasoning that points to actual data in the report. "
+    "Do NOT use generic boilerplate like 'requires verification.'\n"
+    "3. Pick the strongest applicable FCRA section:\n"
+    "   - § 605: obsolete items past 7 years from DOFD (or 10 years for bankruptcy)\n"
+    "   - § 623: furnisher inaccuracies (wrong balance/dates/status/payment history)\n"
+    "   - § 611: general disputes only when § 623 or § 605 don't fit\n"
+    "   - § 609: disclosure issues, account ownership disputes\n"
+    "4. Use hedged language: 'appears to be inaccurate,' 'cannot be verified from the data,' "
+    "'requires furnisher confirmation.' Never guarantee removal.\n"
+    "5. Confidence scoring:\n"
+    "   - 0.85+: clearly inaccurate (data conflict visible) or clearly obsolete\n"
+    "   - 0.60–0.84: missing required field (DOFD), duplicate, or inquiry without matching tradeline\n"
+    "   - Below 0.60: skip — too weak to risk frivolous-flag\n"
+    "6. If there are no items meeting these criteria, return an empty array. Do NOT fabricate.\n"
+    "7. For § 605 obsolete calculations: today's date - date_of_first_delinquency. If DOFD "
+    "is null/missing, classify as 'missing required field' (still strong) rather than assuming."
 )
 
 
@@ -224,12 +261,15 @@ async def analyze_parsed_report(parsed_report: ParsedReport) -> list[DisputeItem
 
     payload = build_prompt_payload(parsed_report)
 
+    # Opus 4.7 with extended thinking — high-reasoning credit report analysis.
+    # tool_choice must be "auto" when thinking is enabled (per Anthropic docs).
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
+        model="claude-opus-4-7",
+        max_tokens=16000,
+        thinking={"type": "enabled", "budget_tokens": 8000},
         system=SYSTEM_PROMPT,
         tools=[ANALYZE_TOOL],
-        tool_choice={"type": "any"},
+        tool_choice={"type": "auto"},
         messages=[
             {
                 "role": "user",
@@ -238,7 +278,7 @@ async def analyze_parsed_report(parsed_report: ParsedReport) -> list[DisputeItem
         ],
     )
 
-    # Extract tool_use block — required due to tool_choice={"type": "any"}
+    # Extract tool_use block — comes after thinking blocks in the response.
     tool_block = next(
         (b for b in response.content if b.type == "tool_use"),
         None,

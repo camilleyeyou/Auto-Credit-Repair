@@ -31,7 +31,7 @@ from models.letter import LetterRequest
 
 BUREAU_ADDRESSES: dict[str, tuple[str, str]] = {
     "experian":   ("Experian",   "P.O. Box 4500\nAllen, TX 75013"),
-    "equifax":    ("Equifax",    "P.O. Box 740256\nAtlanta, GA 30374"),
+    "equifax":    ("Equifax",    "P.O. Box 740256\nAtlanta, GA 30374-0256"),
     "transunion": ("TransUnion", "P.O. Box 2000\nChester, PA 19016"),
 }
 
@@ -135,13 +135,24 @@ async def generate_letter_body(request: LetterRequest) -> str:
     if request.letter_type == "escalation" and request.bureau_outcome_summary:
         user_message += f"Bureau outcome summary: {request.bureau_outcome_summary}\n"
 
+    # Opus 4.7 with extended thinking — drafts persuasive, FCRA-grounded letters.
+    # Budget reasoning so each letter is tailored, not boilerplate.
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=512,
+        model="claude-opus-4-7",
+        max_tokens=8000,
+        thinking={"type": "enabled", "budget_tokens": 4000},
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
     )
-    return response.content[0].text.strip()
+
+    # Extract the text block (skipping thinking blocks).
+    text_block = next(
+        (b for b in response.content if b.type == "text"),
+        None,
+    )
+    if text_block is None:
+        raise ValueError("Claude did not return a text block")
+    return text_block.text.strip()
 
 
 # ---------------------------------------------------------------------------

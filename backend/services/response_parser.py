@@ -118,8 +118,9 @@ async def parse_response_letter(text: str, bureau: str) -> dict:
         f"Response letter text:\n{text}"
     )
 
+    # Sonnet 4.6 — fast, accurate structured extraction from response PDFs.
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=1024,
         system=PARSE_SYSTEM_PROMPT,
         tools=[PARSE_RESPONSE_TOOL],
