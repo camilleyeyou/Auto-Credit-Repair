@@ -34,8 +34,10 @@ interface DisputeLetter {
   sentAt?: number;
   certifiedMailNumber?: string;
   deadline?: number;
-  // Plan 06: letter type for demand/escalation badges (mov + validation added in escalation phase)
-  letterType?: "initial" | "demand" | "escalation" | "mov" | "validation";
+  // Plan 06+: letter type — initial / demand / escalation / mov / validation /
+  // goodwill / pay_for_delete / identity_theft_block
+  letterType?: "initial" | "demand" | "escalation" | "mov" | "validation"
+              | "goodwill" | "pay_for_delete" | "identity_theft_block";
 }
 
 // Plan 06: letter type badge configuration
@@ -45,6 +47,9 @@ const LETTER_TYPE_LABEL: Record<string, { label: string; className: string }> = 
   initial:    { label: "Initial",    className: "bg-blue-100 text-blue-700 border border-blue-200" },
   mov:        { label: "MOV",        className: "bg-indigo-100 text-indigo-700 border border-indigo-200" },
   validation: { label: "FDCPA Validation", className: "bg-teal-100 text-teal-700 border border-teal-200" },
+  goodwill:   { label: "Goodwill",   className: "bg-green-100 text-green-700 border border-green-200" },
+  pay_for_delete: { label: "Pay-for-Delete", className: "bg-yellow-100 text-yellow-700 border border-yellow-200" },
+  identity_theft_block: { label: "ID Theft § 605B", className: "bg-rose-100 text-rose-700 border border-rose-200" },
 };
 
 const BUREAU_LABELS: Record<Bureau, string> = {

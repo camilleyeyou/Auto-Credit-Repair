@@ -67,6 +67,63 @@ DEMAND_SYSTEM_PROMPT = (
     "7. One paragraph, 3-5 sentences."
 )
 
+GOODWILL_SYSTEM_PROMPT = (
+    "You are a goodwill letter writer. Write a single courteous paragraph for a goodwill "
+    "removal request to a creditor. Goodwill letters ask the creditor — as a gesture of "
+    "good faith — to remove a late payment from a credit report on an account otherwise "
+    "in good standing. They are NOT legal demands; they appeal to the creditor's discretion. "
+    "Rules: "
+    "1. Friendly, respectful, even apologetic tone — never adversarial. "
+    "2. Acknowledge that the late payment occurred and take responsibility. "
+    "3. Briefly mention any legitimate hardship if relevant (don't fabricate). "
+    "4. Note the consumer's overall positive payment history with the creditor. "
+    "5. Politely ask the creditor to remove the late payment as a goodwill gesture. "
+    "6. Do NOT cite FCRA or any law — this is a goodwill ask, not a legal dispute. "
+    "7. Do NOT make demands — use language like 'I respectfully request' or 'would you consider'. "
+    "8. NEVER guarantee anything — the creditor is under no obligation to grant this. "
+    "9. One paragraph, 4-6 sentences. No headers or salutations."
+)
+
+PAY_FOR_DELETE_SYSTEM_PROMPT = (
+    "You are a debt-settlement letter writer. Write a single professional paragraph "
+    "proposing a pay-for-delete arrangement to a debt collector. The consumer offers to "
+    "pay a specified amount in exchange for the collector deleting the tradeline from "
+    "all three major credit bureaus. "
+    "Rules: "
+    "1. Acknowledge the debt the collector claims, but neither admit nor deny it. "
+    "2. State the offer amount clearly. "
+    "3. Make it conditional: payment ONLY if the collector agrees IN WRITING to: "
+    "   (a) delete the tradeline from Experian, Equifax, and TransUnion, "
+    "   (b) consider the debt fully settled, "
+    "   (c) stop all collection activity. "
+    "4. Note that the offer is null and void if the collector does not provide written "
+    "   confirmation of these terms BEFORE payment. "
+    "5. Use firm, business-like tone — this is a settlement negotiation. "
+    "6. Note that any partial payment without written agreement should not be deposited. "
+    "7. NEVER guarantee outcomes — the collector may decline. "
+    "8. One paragraph, 4-6 sentences. No headers or salutations."
+)
+
+IDENTITY_THEFT_BLOCK_SYSTEM_PROMPT = (
+    "You are a credit dispute letter writer for an identity theft block request under "
+    "FCRA § 605B (15 U.S.C. § 1681c-2). The consumer is the victim of identity theft and "
+    "is exercising their right to have the disputed item BLOCKED from the credit report "
+    "within 4 BUSINESS DAYS of receipt — without an investigation. This is the strongest "
+    "tool when applicable. "
+    "Rules: "
+    "1. State clearly that this is a § 605B identity theft block request, citing 15 U.S.C. § 1681c-2. "
+    "2. Identify the specific account/item to be blocked. "
+    "3. Note that an FTC IdentityTheft.gov report (or equivalent police report) is enclosed. "
+    "4. Reference the FTC Identity Theft Report number provided in the request data. "
+    "5. State that the consumer is a victim of identity theft and that the disputed item "
+    "   resulted from that identity theft. "
+    "6. Note that under § 605B, the bureau must block the item within 4 business days. "
+    "7. Use firm, formal, professional tone — this is a legal demand grounded in clear statute. "
+    "8. Do NOT state what the bureau is 'legally required' to do — use procedural language only. "
+    "9. NEVER guarantee removal — the bureau may temporarily decline if it has reasonable belief the consumer's claim is false. "
+    "10. One paragraph, 5-7 sentences. No headers or salutations."
+)
+
 VALIDATION_SYSTEM_PROMPT = (
     "You are a debt validation letter writer. Write a single professional paragraph "
     "for a Fair Debt Collection Practices Act (FDCPA) § 1692g debt validation request. "
@@ -148,7 +205,8 @@ async def generate_letter_body(request: LetterRequest) -> str:
             f"Must be one of: {list(BUREAU_ADDRESSES.keys())}"
         )
 
-    # Branch on letter_type for demand/escalation/mov/validation — per Phase 6 / MOV / FDCPA plan
+    # Branch on letter_type — covers initial / demand / escalation / mov / validation /
+    # goodwill / pay_for_delete / identity_theft_block
     if request.letter_type == "demand":
         system_prompt = DEMAND_SYSTEM_PROMPT
     elif request.letter_type == "escalation":
@@ -157,6 +215,12 @@ async def generate_letter_body(request: LetterRequest) -> str:
         system_prompt = MOV_SYSTEM_PROMPT
     elif request.letter_type == "validation":
         system_prompt = VALIDATION_SYSTEM_PROMPT
+    elif request.letter_type == "goodwill":
+        system_prompt = GOODWILL_SYSTEM_PROMPT
+    elif request.letter_type == "pay_for_delete":
+        system_prompt = PAY_FOR_DELETE_SYSTEM_PROMPT
+    elif request.letter_type == "identity_theft_block":
+        system_prompt = IDENTITY_THEFT_BLOCK_SYSTEM_PROMPT
     else:
         system_prompt = LETTER_SYSTEM_PROMPT
 
@@ -184,6 +248,15 @@ async def generate_letter_body(request: LetterRequest) -> str:
     if request.letter_type == "validation":
         if request.collector_name:
             user_message += f"Debt collector: {request.collector_name}\n"
+    if request.letter_type == "goodwill" and request.collector_name:
+        user_message += f"Creditor (recipient): {request.collector_name}\n"
+    if request.letter_type == "pay_for_delete":
+        if request.collector_name:
+            user_message += f"Debt collector: {request.collector_name}\n"
+        if request.offer_amount:
+            user_message += f"Settlement offer amount: {request.offer_amount}\n"
+    if request.letter_type == "identity_theft_block" and request.ftc_report_number:
+        user_message += f"FTC Identity Theft Report number: {request.ftc_report_number}\n"
 
     # Opus 4.7 with extended thinking — drafts persuasive, FCRA-grounded letters.
     # Budget reasoning so each letter is tailored, not boilerplate.
@@ -225,12 +298,13 @@ def render_letter_html(request: LetterRequest, body_paragraph: str) -> str:
     Raises:
         ValueError: If request.bureau is not in BUREAU_ADDRESSES.
     """
-    # FDCPA validation letters go to the collector, not the bureau.
-    # Use user-supplied collector address; fall back to bureau if missing.
-    if request.letter_type == "validation":
+    # Letters that go to a non-bureau recipient (collector or creditor).
+    # Identity theft block goes to bureaus, so it stays on the bureau path.
+    non_bureau_recipient_types = {"validation", "goodwill", "pay_for_delete"}
+    if request.letter_type in non_bureau_recipient_types:
         if not request.collector_name or not request.collector_address:
             raise ValueError(
-                "FDCPA validation letters require collector_name and collector_address",
+                f"{request.letter_type} letters require collector_name and collector_address",
             )
         bureau_display_name = request.collector_name
         bureau_address_raw = request.collector_address

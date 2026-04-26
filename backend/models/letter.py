@@ -24,14 +24,19 @@ class LetterRequest(BaseModel):
     city: str
     state: str
     zip_code: str
-    # Phase 6 extension — letter type for demand/escalation/mov/validation branches
-    letter_type: Optional[str] = None           # "initial" | "demand" | "escalation" | "mov" | "validation"
+    # Phase 6 extension — letter type for non-initial branches
+    letter_type: Optional[str] = None
+    # initial | demand | escalation | mov | validation | goodwill | pay_for_delete | identity_theft_block
     original_sent_date: Optional[str] = None    # ISO date, used in demand letter narrative
     bureau_outcome_summary: Optional[str] = None  # used in escalation letter narrative
-    # FDCPA validation letter — sent to the collector, not the bureau.
-    # Address is user-supplied via the validation dialog.
+    # Recipient fields for non-bureau letters (collector / creditor address).
+    # User-supplied via the relevant generation dialog.
     collector_name:    Optional[str] = None
     collector_address: Optional[str] = None     # multi-line address (use \n)
+    # Pay-for-delete: dollar amount the consumer offers
+    offer_amount: Optional[str] = None          # e.g. "$250" or "250.00"
+    # Identity theft block: FTC IdentityTheft.gov report number (or police report)
+    ftc_report_number: Optional[str] = None
 
 
 class LetterResponse(BaseModel):

@@ -109,6 +109,9 @@ export default function TrackerPage() {
   const generateEscalationLetter = useAction(api.bureauResponses.generateEscalationLetter);
   const generateMovLetter = useAction(api.bureauResponses.generateMovLetter);
   const generateValidationLetter = useAction(api.bureauResponses.generateValidationLetter);
+  const generateGoodwillLetter = useAction(api.bureauResponses.generateGoodwillLetter);
+  const generatePayForDeleteLetter = useAction(api.bureauResponses.generatePayForDeleteLetter);
+  const generateIdentityTheftBlockLetter = useAction(api.bureauResponses.generateIdentityTheftBlockLetter);
   const generateCfpbNarrative = useAction(api.cfpbComplaints.generateCfpbNarrative);
   const updateCfpbStatus = useMutation(api.cfpbComplaints.updateCfpbStatus);
 
@@ -121,6 +124,15 @@ export default function TrackerPage() {
   const [validationDialogOpen, setValidationDialogOpen] = useState<string | null>(null);
   const [collectorName, setCollectorName] = useState("");
   const [collectorAddress, setCollectorAddress] = useState("");
+  // Goodwill / pay-for-delete / identity-theft block dialogs
+  const [generatingGoodwill, setGeneratingGoodwill] = useState<string | null>(null);
+  const [goodwillDialogOpen, setGoodwillDialogOpen] = useState<string | null>(null);
+  const [generatingPfd, setGeneratingPfd] = useState<string | null>(null);
+  const [pfdDialogOpen, setPfdDialogOpen] = useState<string | null>(null);
+  const [pfdOfferAmount, setPfdOfferAmount] = useState("");
+  const [generatingIdTheft, setGeneratingIdTheft] = useState<string | null>(null);
+  const [idTheftDialogOpen, setIdTheftDialogOpen] = useState<string | null>(null);
+  const [idTheftReportNumber, setIdTheftReportNumber] = useState("");
   const [generatingCfpb, setGeneratingCfpb] = useState<string | null>(null);
   const [expandedCfpb, setExpandedCfpb] = useState<string | null>(null);
   const [actionError, setActionError] = useState<Record<string, string>>({});
@@ -427,7 +439,7 @@ export default function TrackerPage() {
 
                   {/* FDCPA § 1692g debt validation — only for collection items */}
                   {item.itemType === "collection" && (
-                    <div>
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -441,8 +453,57 @@ export default function TrackerPage() {
                       >
                         Send Debt Validation Letter (FDCPA)
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearItemError(item._id);
+                          setCollectorName(item.creditorName);
+                          setCollectorAddress("");
+                          setPfdOfferAmount("");
+                          setPfdDialogOpen(item._id);
+                        }}
+                        className="inline-flex items-center rounded-md border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-sm font-medium text-yellow-800 hover:bg-yellow-100 transition-colors"
+                        title="Offer payment in exchange for tradeline deletion (get terms in writing FIRST)"
+                      >
+                        Pay-for-Delete Offer
+                      </button>
                     </div>
                   )}
+
+                  {/* Goodwill letter — only for late_payment items */}
+                  {item.itemType === "late_payment" && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearItemError(item._id);
+                          setCollectorName(item.creditorName);
+                          setCollectorAddress("");
+                          setGoodwillDialogOpen(item._id);
+                        }}
+                        className="inline-flex items-center rounded-md border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100 transition-colors"
+                        title="Politely ask the creditor to remove the late payment as goodwill"
+                      >
+                        Send Goodwill Removal Letter
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Identity theft § 605B block — available for all items */}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearItemError(item._id);
+                        setIdTheftReportNumber("");
+                        setIdTheftDialogOpen(item._id);
+                      }}
+                      className="inline-flex items-center rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-100 transition-colors"
+                      title="Block this item under FCRA § 605B (requires FTC IdentityTheft.gov report)"
+                    >
+                      Identity Theft Block (§ 605B)
+                    </button>
+                  </div>
 
                   {/* CFPB section — show for denied disputes */}
                   {showCfpb && response && (
@@ -539,6 +600,232 @@ export default function TrackerPage() {
                     bureau={item.bureau as "experian" | "equifax" | "transunion"}
                     onClose={() => setOpenResponseDialogId(null)}
                   />
+                )}
+
+                {/* Goodwill Letter Dialog */}
+                {goodwillDialogOpen === item._id && (
+                  <Dialog.Root
+                    open
+                    onOpenChange={(open) => {
+                      if (!open) setGoodwillDialogOpen(null);
+                    }}
+                  >
+                    <Dialog.Portal>
+                      <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
+                      <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl">
+                        <Dialog.Title className="text-lg font-semibold text-slate-900">
+                          Send Goodwill Letter
+                        </Dialog.Title>
+                        <p className="mt-1 text-sm text-slate-500">
+                          A friendly request to the creditor to remove a late payment as a goodwill gesture. Most effective with credit unions and smaller lenders. Send this to the creditor&apos;s customer service or executive contact address.
+                        </p>
+                        <div className="mt-4 space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">Creditor Name</label>
+                            <input
+                              type="text"
+                              value={collectorName}
+                              onChange={(e) => setCollectorName(e.target.value)}
+                              placeholder="Capital One"
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">Creditor Mailing Address</label>
+                            <textarea
+                              value={collectorAddress}
+                              onChange={(e) => setCollectorAddress(e.target.value)}
+                              placeholder="P.O. Box 30285&#10;Salt Lake City, UT 84130"
+                              rows={4}
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-mono focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-5 flex justify-end gap-2">
+                          <Dialog.Close className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</Dialog.Close>
+                          <button
+                            type="button"
+                            disabled={!collectorName.trim() || !collectorAddress.trim() || generatingGoodwill === item._id}
+                            onClick={async () => {
+                              clearItemError(item._id);
+                              setGeneratingGoodwill(item._id);
+                              try {
+                                await generateGoodwillLetter({
+                                  disputeItemId:   item._id as Id<"dispute_items">,
+                                  creditorName:    collectorName.trim(),
+                                  creditorAddress: collectorAddress.trim(),
+                                });
+                                setGoodwillDialogOpen(null);
+                              } catch (err: unknown) {
+                                setItemError(item._id, err instanceof Error ? err.message : "Failed to generate goodwill letter.");
+                              } finally {
+                                setGeneratingGoodwill(null);
+                              }
+                            }}
+                            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                          >
+                            {generatingGoodwill === item._id ? "Generating..." : "Generate Letter"}
+                          </button>
+                        </div>
+                      </Dialog.Popup>
+                    </Dialog.Portal>
+                  </Dialog.Root>
+                )}
+
+                {/* Pay-for-Delete Letter Dialog */}
+                {pfdDialogOpen === item._id && (
+                  <Dialog.Root
+                    open
+                    onOpenChange={(open) => {
+                      if (!open) setPfdDialogOpen(null);
+                    }}
+                  >
+                    <Dialog.Portal>
+                      <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
+                      <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl">
+                        <Dialog.Title className="text-lg font-semibold text-slate-900">
+                          Pay-for-Delete Settlement Offer
+                        </Dialog.Title>
+                        <div className="mt-3 rounded-md bg-yellow-50 border border-yellow-200 p-3 text-xs text-yellow-900">
+                          <strong>Important:</strong> Never send payment until the collector agrees IN WRITING to delete the tradeline. The letter will state this condition explicitly. Get the agreement first; pay second.
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">Collector Name</label>
+                            <input
+                              type="text"
+                              value={collectorName}
+                              onChange={(e) => setCollectorName(e.target.value)}
+                              placeholder="Midland Credit Management"
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">Collector Mailing Address</label>
+                            <textarea
+                              value={collectorAddress}
+                              onChange={(e) => setCollectorAddress(e.target.value)}
+                              placeholder="2365 Northside Drive&#10;Suite 300&#10;San Diego, CA 92108"
+                              rows={4}
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-mono focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">Settlement Offer Amount</label>
+                            <input
+                              type="text"
+                              value={pfdOfferAmount}
+                              onChange={(e) => setPfdOfferAmount(e.target.value)}
+                              placeholder="$250"
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                            <p className="mt-1 text-xs text-slate-400">Common ranges: 30-60% of original debt for older collections.</p>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex justify-end gap-2">
+                          <Dialog.Close className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</Dialog.Close>
+                          <button
+                            type="button"
+                            disabled={!collectorName.trim() || !collectorAddress.trim() || !pfdOfferAmount.trim() || generatingPfd === item._id}
+                            onClick={async () => {
+                              clearItemError(item._id);
+                              setGeneratingPfd(item._id);
+                              try {
+                                await generatePayForDeleteLetter({
+                                  disputeItemId:    item._id as Id<"dispute_items">,
+                                  collectorName:    collectorName.trim(),
+                                  collectorAddress: collectorAddress.trim(),
+                                  offerAmount:      pfdOfferAmount.trim(),
+                                });
+                                setPfdDialogOpen(null);
+                              } catch (err: unknown) {
+                                setItemError(item._id, err instanceof Error ? err.message : "Failed to generate pay-for-delete letter.");
+                              } finally {
+                                setGeneratingPfd(null);
+                              }
+                            }}
+                            className="rounded-md bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-700 disabled:opacity-50"
+                          >
+                            {generatingPfd === item._id ? "Generating..." : "Generate Letter"}
+                          </button>
+                        </div>
+                      </Dialog.Popup>
+                    </Dialog.Portal>
+                  </Dialog.Root>
+                )}
+
+                {/* Identity Theft § 605B Block Dialog */}
+                {idTheftDialogOpen === item._id && (
+                  <Dialog.Root
+                    open
+                    onOpenChange={(open) => {
+                      if (!open) setIdTheftDialogOpen(null);
+                    }}
+                  >
+                    <Dialog.Portal>
+                      <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
+                      <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl">
+                        <Dialog.Title className="text-lg font-semibold text-slate-900">
+                          Identity Theft Block (FCRA § 605B)
+                        </Dialog.Title>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Under FCRA § 605B, the bureau must <strong>block this item within 4 business days</strong> — no investigation needed — when you provide an FTC IdentityTheft.gov report. This is the strongest tool available for items resulting from identity theft.
+                        </p>
+                        <div className="mt-3 rounded-md bg-rose-50 border border-rose-200 p-3 text-xs text-rose-900">
+                          You must have an FTC Identity Theft Report from{" "}
+                          <a
+                            href="https://www.identitytheft.gov"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline font-medium"
+                          >
+                            IdentityTheft.gov
+                          </a>{" "}
+                          (or an equivalent police report). Mail a copy of that report along with this letter via Certified Mail.
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-slate-700 block mb-1">FTC Report Number</label>
+                            <input
+                              type="text"
+                              value={idTheftReportNumber}
+                              onChange={(e) => setIdTheftReportNumber(e.target.value)}
+                              placeholder="e.g. ITR-1234567"
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-[#1E3A8A] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20"
+                            />
+                            <p className="mt-1 text-xs text-slate-400">
+                              Report number from your FTC Identity Theft Report or police report.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex justify-end gap-2">
+                          <Dialog.Close className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</Dialog.Close>
+                          <button
+                            type="button"
+                            disabled={!idTheftReportNumber.trim() || generatingIdTheft === item._id}
+                            onClick={async () => {
+                              clearItemError(item._id);
+                              setGeneratingIdTheft(item._id);
+                              try {
+                                await generateIdentityTheftBlockLetter({
+                                  disputeItemId:   item._id as Id<"dispute_items">,
+                                  ftcReportNumber: idTheftReportNumber.trim(),
+                                });
+                                setIdTheftDialogOpen(null);
+                              } catch (err: unknown) {
+                                setItemError(item._id, err instanceof Error ? err.message : "Failed to generate identity theft block letter.");
+                              } finally {
+                                setGeneratingIdTheft(null);
+                              }
+                            }}
+                            className="rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50"
+                          >
+                            {generatingIdTheft === item._id ? "Generating..." : "Generate Block Letter"}
+                          </button>
+                        </div>
+                      </Dialog.Popup>
+                    </Dialog.Portal>
+                  </Dialog.Root>
                 )}
 
                 {/* FDCPA Validation Letter Dialog */}

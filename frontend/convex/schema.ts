@@ -103,12 +103,19 @@ export default defineSchema({
       v.literal("initial"),
       v.literal("demand"),
       v.literal("escalation"),
-      v.literal("mov"),         // Method of Verification — § 1681i(a)(6)(B)(iii)
-      v.literal("validation"),  // FDCPA § 1692g debt validation (to collector, not bureau)
+      v.literal("mov"),                  // Method of Verification — § 1681i(a)(6)(B)(iii)
+      v.literal("validation"),           // FDCPA § 1692g debt validation
+      v.literal("goodwill"),             // Goodwill removal request (to creditor)
+      v.literal("pay_for_delete"),       // Settlement offer in exchange for tradeline deletion
+      v.literal("identity_theft_block"), // FCRA § 605B / 15 U.S.C. § 1681c-2
     )),
-    // FDCPA validation: collector address & contact (manually entered, not bureau)
+    // Address fields for non-bureau letters (collector, creditor)
     collectorName:    v.optional(v.string()),
     collectorAddress: v.optional(v.string()),
+    // Pay-for-delete: dollar offer amount the user is making
+    offerAmount:      v.optional(v.string()),
+    // Identity theft: FTC IdentityTheft.gov report number or police report number
+    ftcReportNumber:  v.optional(v.string()),
   })
     .index("by_user",         ["userId"])
     .index("by_dispute_item", ["disputeItemId"])

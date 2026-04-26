@@ -467,6 +467,265 @@ export const generateValidationLetter = action({
 });
 
 /**
+ * Public action: generate a goodwill letter to a creditor for a late payment.
+ * Goodwill letters are courteous, non-legal asks for the creditor to remove
+ * a late payment as a gesture of good faith.
+ *
+ * Args:
+ * - disputeItemId: dispute item with itemType="late_payment"
+ * - creditorName: user-supplied creditor name (typically same as item creditor)
+ * - creditorAddress: user-supplied multi-line address
+ */
+export const generateGoodwillLetter = action({
+  args: {
+    disputeItemId:    v.id("dispute_items"),
+    creditorName:     v.string(),
+    creditorAddress:  v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const fastapiUrl = process.env.FASTAPI_URL;
+    if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+    const disputeItem = await ctx.runQuery(internal.disputeItems.getItem, {
+      id: args.disputeItemId,
+    });
+    if (!disputeItem) throw new Error("Dispute item not found");
+    if (disputeItem.userId !== identity.subject) {
+      throw new Error("Unauthorized: you do not own this dispute item");
+    }
+
+    const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
+      userId: identity.subject,
+    });
+    if (
+      !userProfile?.fullName || !userProfile?.streetAddress ||
+      !userProfile?.city || !userProfile?.state || !userProfile?.zip
+    ) {
+      throw new Error("Profile incomplete — add your name and mailing address in Profile before generating letters");
+    }
+
+    const letterRequest = {
+      bureau:               disputeItem.bureau,
+      creditor_name:        disputeItem.creditorName,
+      account_number_last4: disputeItem.accountNumberLast4 ?? undefined,
+      dispute_reason:       disputeItem.disputeReason,
+      fcra_section:         disputeItem.fcraSection,
+      fcra_section_title:   disputeItem.fcraSectionTitle,
+      full_name:            userProfile.fullName,
+      street_address:       userProfile.streetAddress,
+      city:                 userProfile.city,
+      state:                userProfile.state,
+      zip_code:             userProfile.zip,
+      letter_type:          "goodwill" as const,
+      collector_name:       args.creditorName,
+      collector_address:    args.creditorAddress,
+    };
+
+    const response = await fetch(`${fastapiUrl}/api/letters/generate`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(letterRequest),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json() as { letter_html: string; pdf_base64: string };
+    const pdfBytes = Uint8Array.from(atob(result.pdf_base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const storageId = await ctx.storage.store(blob);
+
+    await ctx.runMutation(internal.letters.saveLetter, {
+      disputeItemId:    args.disputeItemId,
+      userId:           identity.subject,
+      bureau:           disputeItem.bureau,
+      letterContent:    result.letter_html,
+      storageId,
+      letterType:       "goodwill",
+      collectorName:    args.creditorName,
+      collectorAddress: args.creditorAddress,
+    });
+  },
+});
+
+/**
+ * Public action: generate a pay-for-delete settlement letter to a debt collector.
+ * Offers payment in exchange for tradeline deletion. The letter explicitly
+ * conditions payment on written agreement before any funds change hands.
+ *
+ * Args:
+ * - disputeItemId: dispute item with itemType="collection"
+ * - collectorName / collectorAddress: user-supplied
+ * - offerAmount: settlement offer amount as string (e.g. "$250" or "250.00")
+ */
+export const generatePayForDeleteLetter = action({
+  args: {
+    disputeItemId:    v.id("dispute_items"),
+    collectorName:    v.string(),
+    collectorAddress: v.string(),
+    offerAmount:      v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const fastapiUrl = process.env.FASTAPI_URL;
+    if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+    const disputeItem = await ctx.runQuery(internal.disputeItems.getItem, {
+      id: args.disputeItemId,
+    });
+    if (!disputeItem) throw new Error("Dispute item not found");
+    if (disputeItem.userId !== identity.subject) {
+      throw new Error("Unauthorized: you do not own this dispute item");
+    }
+
+    const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
+      userId: identity.subject,
+    });
+    if (
+      !userProfile?.fullName || !userProfile?.streetAddress ||
+      !userProfile?.city || !userProfile?.state || !userProfile?.zip
+    ) {
+      throw new Error("Profile incomplete — add your name and mailing address in Profile before generating letters");
+    }
+
+    const letterRequest = {
+      bureau:               disputeItem.bureau,
+      creditor_name:        disputeItem.creditorName,
+      account_number_last4: disputeItem.accountNumberLast4 ?? undefined,
+      dispute_reason:       disputeItem.disputeReason,
+      fcra_section:         disputeItem.fcraSection,
+      fcra_section_title:   disputeItem.fcraSectionTitle,
+      full_name:            userProfile.fullName,
+      street_address:       userProfile.streetAddress,
+      city:                 userProfile.city,
+      state:                userProfile.state,
+      zip_code:             userProfile.zip,
+      letter_type:          "pay_for_delete" as const,
+      collector_name:       args.collectorName,
+      collector_address:    args.collectorAddress,
+      offer_amount:         args.offerAmount,
+    };
+
+    const response = await fetch(`${fastapiUrl}/api/letters/generate`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(letterRequest),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json() as { letter_html: string; pdf_base64: string };
+    const pdfBytes = Uint8Array.from(atob(result.pdf_base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const storageId = await ctx.storage.store(blob);
+
+    await ctx.runMutation(internal.letters.saveLetter, {
+      disputeItemId:    args.disputeItemId,
+      userId:           identity.subject,
+      bureau:           disputeItem.bureau,
+      letterContent:    result.letter_html,
+      storageId,
+      letterType:       "pay_for_delete",
+      collectorName:    args.collectorName,
+      collectorAddress: args.collectorAddress,
+      offerAmount:      args.offerAmount,
+    });
+  },
+});
+
+/**
+ * Public action: generate an FCRA § 605B identity theft block letter to a bureau.
+ * Under § 605B (15 U.S.C. § 1681c-2), the bureau must block disputed items
+ * within 4 business days of receipt — without an investigation — when the
+ * consumer provides an FTC IdentityTheft.gov report or police report.
+ * Strongest tool when the user has an identity theft report.
+ *
+ * Args:
+ * - disputeItemId: any item resulting from identity theft
+ * - ftcReportNumber: report number from FTC IdentityTheft.gov or police report
+ */
+export const generateIdentityTheftBlockLetter = action({
+  args: {
+    disputeItemId:   v.id("dispute_items"),
+    ftcReportNumber: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const fastapiUrl = process.env.FASTAPI_URL;
+    if (!fastapiUrl) throw new Error("FASTAPI_URL not set");
+
+    const disputeItem = await ctx.runQuery(internal.disputeItems.getItem, {
+      id: args.disputeItemId,
+    });
+    if (!disputeItem) throw new Error("Dispute item not found");
+    if (disputeItem.userId !== identity.subject) {
+      throw new Error("Unauthorized: you do not own this dispute item");
+    }
+
+    const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
+      userId: identity.subject,
+    });
+    if (
+      !userProfile?.fullName || !userProfile?.streetAddress ||
+      !userProfile?.city || !userProfile?.state || !userProfile?.zip
+    ) {
+      throw new Error("Profile incomplete — add your name and mailing address in Profile before generating letters");
+    }
+
+    const letterRequest = {
+      bureau:               disputeItem.bureau,
+      creditor_name:        disputeItem.creditorName,
+      account_number_last4: disputeItem.accountNumberLast4 ?? undefined,
+      dispute_reason:       disputeItem.disputeReason,
+      fcra_section:         "605B",
+      fcra_section_title:   "Identity Theft Block",
+      full_name:            userProfile.fullName,
+      street_address:       userProfile.streetAddress,
+      city:                 userProfile.city,
+      state:                userProfile.state,
+      zip_code:             userProfile.zip,
+      letter_type:          "identity_theft_block" as const,
+      ftc_report_number:    args.ftcReportNumber,
+    };
+
+    const response = await fetch(`${fastapiUrl}/api/letters/generate`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(letterRequest),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI error ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json() as { letter_html: string; pdf_base64: string };
+    const pdfBytes = Uint8Array.from(atob(result.pdf_base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const storageId = await ctx.storage.store(blob);
+
+    await ctx.runMutation(internal.letters.saveLetter, {
+      disputeItemId:   args.disputeItemId,
+      userId:          identity.subject,
+      bureau:          disputeItem.bureau,
+      letterContent:   result.letter_html,
+      storageId,
+      letterType:      "identity_theft_block",
+      ftcReportNumber: args.ftcReportNumber,
+    });
+  },
+});
+
+/**
  * Public action: generate a Method of Verification (MOV) letter for a dispute item
  * the bureau verified. Per FCRA § 611(a)(6)(B)(iii) and § 611(a)(7), the consumer
  * has the right to demand the bureau describe the procedure used to verify,
