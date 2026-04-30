@@ -16,6 +16,7 @@ Per D-16: bureau parameter from request takes precedence; detect_bureau() is fal
 """
 import re
 from io import BytesIO
+from typing import Optional
 from services.pdf_parser.base import BureauParser
 from models.parsed_report import ParsedReport, Tradeline, NegativeItem
 
@@ -28,15 +29,37 @@ SECTION_PUBLIC_RECORDS = re.compile(r'public\s+records', re.IGNORECASE)
 SECTION_PERSONAL = re.compile(r'personal\s+information', re.IGNORECASE)
 
 # Field label patterns
-RE_ACCOUNT_NUMBER = re.compile(r'account\s+(?:number|#)[:\s]+[\w\s\-*X]{0,30}(\d{4})', re.IGNORECASE)
+# Account number: capture either format —
+#   "Account Number XXXXXX1234" (X-prefix, last 4 visible)  OR
+#   "Account Number 620106XXXXXXX" (visible-prefix, X-suffix — modern Experian PDF)
+RE_ACCOUNT_NUMBER = re.compile(r'account\s+(?:number|#)[:\s]+([A-Z0-9X]{4,})', re.IGNORECASE)
+# Per-account anchor — each Experian account block has exactly one "Account Name <CREDITOR>" line.
+RE_ACCOUNT_NAME = re.compile(r'account\s+name[:\s]+([^\n\r]{2,80})', re.IGNORECASE)
 RE_BALANCE = re.compile(r'(?:current\s+)?balance[:\s]+\$?([\d,]+)', re.IGNORECASE)
-RE_STATUS = re.compile(r'(?:account\s+)?status[:\s]+([^\n\r]{1,60})', re.IGNORECASE)
+RE_STATUS = re.compile(r'(?:account\s+)?status[:\s]+([^\n\r]{1,80})', re.IGNORECASE)
 RE_DATE_OPENED = re.compile(r'date\s+opened[:\s]+([\w\s,/\-]{4,20})', re.IGNORECASE)
 RE_DATE_REPORTED = re.compile(r'(?:date|last)\s+reported[:\s]+([\w\s,/\-]{4,20})', re.IGNORECASE)
 RE_DOFD = re.compile(r'date\s+of\s+first\s+delinquency[:\s]+([\w\s,/\-]{4,20})', re.IGNORECASE)
 RE_ACCOUNT_TYPE = re.compile(r'account\s+type[:\s]+([^\n\r]{1,40})', re.IGNORECASE)
-RE_CREDITOR = re.compile(r'^([A-Z][A-Z\s&.,\'\-]{2,50})$', re.MULTILINE)
+RE_CREDITOR = re.compile(r'^([A-Z][A-Z\s&.,\'\-/]{2,50})$', re.MULTILINE)
 RE_NEGATIVE_REASON = re.compile(r'(late\s+payment|collection|charge.?off|bankruptcy|delinquent|past\s+due)', re.IGNORECASE)
+RE_POTENTIALLY_NEGATIVE = re.compile(r'potentially\s+negative', re.IGNORECASE)
+
+
+def _extract_last4(raw: str) -> Optional[str]:
+    """Extract a 4-char identifier from a masked account number.
+
+    Handles both Experian formats:
+      "XXXXXX1234"  -> "1234" (digits at end)
+      "620106XXXXX" -> "0106" (visible digits at start, X-masked at end)
+      "IV2EXXXX"    -> "IV2E" (visible chars at start, no digits)
+    """
+    if not raw:
+        return None
+    visible = raw.upper().replace('X', '')
+    if len(visible) >= 4:
+        return visible[-4:]
+    return visible if visible else None
 
 
 class ExperianParser(BureauParser):
@@ -51,36 +74,30 @@ class ExperianParser(BureauParser):
         public_records: list[dict] = []
         personal_info: dict = {}
 
-        text_blocks = re.split(r'\n{2,}', full_text)
+        # Anchor on "Account Name <CREDITOR>" — modern Experian PDFs have exactly one
+        # per account block. Splitting on \n{2,} doesn't work because PyMuPDF
+        # extraction often produces single-newline-delimited rows for the whole page.
+        name_matches = list(RE_ACCOUNT_NAME.finditer(full_text))
 
-        in_negative_section = False
         dofd_missing_count = 0
 
-        for block in text_blocks:
-            block = block.strip()
-            if not block:
-                continue
+        for i, name_match in enumerate(name_matches):
+            section_start = name_match.start()
+            section_end = (
+                name_matches[i + 1].start()
+                if i + 1 < len(name_matches)
+                else len(full_text)
+            )
+            section = full_text[section_start:section_end]
 
-            if SECTION_NEGATIVE.search(block):
-                in_negative_section = True
-                continue
-            if SECTION_ACCOUNT_HISTORY.search(block) and not SECTION_NEGATIVE.search(block):
-                in_negative_section = False
-                continue
+            creditor_name = name_match.group(1).strip() or "Unknown Creditor"
 
-            acct_match = RE_ACCOUNT_NUMBER.search(block)
-            if not acct_match:
-                continue
+            acct_match = RE_ACCOUNT_NUMBER.search(section)
+            account_number_last4 = (
+                _extract_last4(acct_match.group(1)) if acct_match else None
+            )
 
-            account_number_last4 = acct_match.group(1)
-
-            creditor_lines = [
-                line.strip() for line in block.splitlines()
-                if RE_CREDITOR.match(line.strip()) and len(line.strip()) > 3
-            ]
-            creditor_name = creditor_lines[0] if creditor_lines else "Unknown Creditor"
-
-            balance_match = RE_BALANCE.search(block)
+            balance_match = RE_BALANCE.search(section)
             balance = None
             if balance_match:
                 try:
@@ -88,25 +105,25 @@ class ExperianParser(BureauParser):
                 except ValueError:
                     pass
 
-            status_match = RE_STATUS.search(block)
+            status_match = RE_STATUS.search(section)
             status = status_match.group(1).strip() if status_match else None
 
-            date_opened_match = RE_DATE_OPENED.search(block)
+            date_opened_match = RE_DATE_OPENED.search(section)
             date_opened = date_opened_match.group(1).strip() if date_opened_match else None
 
-            date_reported_match = RE_DATE_REPORTED.search(block)
+            date_reported_match = RE_DATE_REPORTED.search(section)
             date_reported = date_reported_match.group(1).strip() if date_reported_match else None
 
             # DOFD — only from explicit label (Pitfall 7: never substitute charge-off date)
-            dofd_match = RE_DOFD.search(block)
+            dofd_match = RE_DOFD.search(section)
             date_of_first_delinquency = dofd_match.group(1).strip() if dofd_match else None
             if date_of_first_delinquency is None:
                 dofd_missing_count += 1
 
-            account_type_match = RE_ACCOUNT_TYPE.search(block)
+            account_type_match = RE_ACCOUNT_TYPE.search(section)
             account_type = account_type_match.group(1).strip() if account_type_match else None
 
-            payment_cells = re.findall(r'\b(OK|30|60|90|120|CO|ND|---|\*)\b', block)
+            payment_cells = re.findall(r'\b(OK|30|60|90|120|150|180|CO|CLS|ND|---|\*)\b', section)
             payment_history = payment_cells if payment_cells else None
 
             tradeline = Tradeline(
@@ -121,11 +138,21 @@ class ExperianParser(BureauParser):
                 date_of_first_delinquency=date_of_first_delinquency,
             )
 
-            negative_reason_match = RE_NEGATIVE_REASON.search(block)
-            if in_negative_section or negative_reason_match:
+            # Negative determination: "POTENTIALLY NEGATIVE" appears just before the
+            # account block, OR the section contains delinquency/collection language.
+            pre_context = full_text[max(0, section_start - 400):section_start]
+            negative_reason_match = RE_NEGATIVE_REASON.search(section)
+            is_potentially_negative = bool(RE_POTENTIALLY_NEGATIVE.search(pre_context))
+
+            if is_potentially_negative or negative_reason_match:
+                reason = (
+                    negative_reason_match.group(1).lower().replace(' ', '_')
+                    if negative_reason_match
+                    else "delinquent"
+                )
                 negative_items.append(NegativeItem(
                     **tradeline.model_dump(),
-                    reason_negative=negative_reason_match.group(1).lower().replace(' ', '_') if negative_reason_match else "delinquent",
+                    reason_negative=reason,
                 ))
             else:
                 accounts.append(tradeline)
