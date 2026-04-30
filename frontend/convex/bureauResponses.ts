@@ -1,6 +1,7 @@
 import { action, mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Shared argument validators — reused across saveResponse and recordResponseManual
 const bureauValidator = v.union(
@@ -298,8 +299,10 @@ export const generateDemandLetter = action({
     }
 
     // 4. Fetch user profile (letter header fields)
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
     if (
       !userProfile?.fullName ||
@@ -405,8 +408,10 @@ export const generateValidationLetter = action({
       throw new Error("Unauthorized: you do not own this dispute item");
     }
 
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
     if (
       !userProfile?.fullName ||
@@ -497,8 +502,10 @@ export const generateGoodwillLetter = action({
       throw new Error("Unauthorized: you do not own this dispute item");
     }
 
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
     if (
       !userProfile?.fullName || !userProfile?.streetAddress ||
@@ -584,8 +591,10 @@ export const generatePayForDeleteLetter = action({
       throw new Error("Unauthorized: you do not own this dispute item");
     }
 
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
     if (
       !userProfile?.fullName || !userProfile?.streetAddress ||
@@ -672,8 +681,10 @@ export const generateIdentityTheftBlockLetter = action({
       throw new Error("Unauthorized: you do not own this dispute item");
     }
 
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
     if (
       !userProfile?.fullName || !userProfile?.streetAddress ||
@@ -755,8 +766,10 @@ export const generateMovLetter = action({
       throw new Error("Unauthorized: you do not own this dispute item");
     }
 
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
     if (
       !userProfile?.fullName ||
@@ -845,8 +858,10 @@ export const generateEscalationLetter = action({
     }
 
     // 4. Fetch user profile (letter header fields)
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
     if (
       !userProfile?.fullName ||
