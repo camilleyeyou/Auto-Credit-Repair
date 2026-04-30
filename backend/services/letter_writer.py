@@ -258,12 +258,13 @@ async def generate_letter_body(request: LetterRequest) -> str:
     if request.letter_type == "identity_theft_block" and request.ftc_report_number:
         user_message += f"FTC Identity Theft Report number: {request.ftc_report_number}\n"
 
-    # Opus 4.7 with extended thinking — drafts persuasive, FCRA-grounded letters.
-    # Budget reasoning so each letter is tailored, not boilerplate.
+    # Opus 4.7 with adaptive thinking — drafts persuasive, FCRA-grounded letters.
+    # Effort "medium" so each letter is tailored, not boilerplate.
     response = client.messages.create(
         model="claude-opus-4-7",
         max_tokens=8000,
-        thinking={"type": "enabled", "budget_tokens": 4000},
+        thinking={"type": "adaptive"},
+        output_config={"effort": "medium"},
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
     )

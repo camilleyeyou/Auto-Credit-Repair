@@ -261,12 +261,13 @@ async def analyze_parsed_report(parsed_report: ParsedReport) -> list[DisputeItem
 
     payload = build_prompt_payload(parsed_report)
 
-    # Opus 4.7 with extended thinking — high-reasoning credit report analysis.
+    # Opus 4.7 with adaptive thinking — high-reasoning credit report analysis.
     # tool_choice must be "auto" when thinking is enabled (per Anthropic docs).
     response = client.messages.create(
         model="claude-opus-4-7",
         max_tokens=16000,
-        thinking={"type": "enabled", "budget_tokens": 8000},
+        thinking={"type": "adaptive"},
+        output_config={"effort": "high"},
         system=SYSTEM_PROMPT,
         tools=[ANALYZE_TOOL],
         tool_choice={"type": "auto"},
