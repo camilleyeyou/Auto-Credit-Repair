@@ -68,10 +68,15 @@ export const updateEmailPrefs = mutation({
  * Internal query: fetch user record for cron scan email preferences lookup.
  * Returns null if user not found. Callers must handle null.
  * Used by scanDeadlines internalMutation in crons.ts.
+ *
+ * Tables store userId as `identity.subject`, which Convex Auth formats as
+ * "<userId>|<sessionId>". Strip the session suffix before using it as a
+ * users-table _id.
  */
 export const getEmailPrefs = internalQuery({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.userId as Id<"users">);
+    const userDocId = args.userId.split("|")[0] as Id<"users">;
+    return await ctx.db.get(userDocId);
   },
 });

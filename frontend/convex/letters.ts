@@ -1,7 +1,7 @@
 import { action, mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // FCRA USC mapping — mirrors backend/services/ai_analyzer.py FCRA_LIBRARY
 const FCRA_USC: Record<string, string> = {
@@ -14,12 +14,13 @@ const FCRA_USC: Record<string, string> = {
 
 /**
  * Internal query: fetch the user profile document for letter header fields.
- * Uses identity.subject (Convex user ID) to look up the users table.
+ * Takes the users table _id (NOT identity.subject — that has the form
+ * "<userId>|<sessionId>" and won't decode as a document ID).
  */
 export const getUserProfile = internalQuery({
-  args: { userId: v.string() },
+  args: { userId: v.id("users") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.userId as Id<"users">);
+    return await ctx.db.get(args.userId);
   },
 });
 
@@ -141,9 +142,13 @@ export const generateLetters = action({
       return; // Nothing to generate
     }
 
-    // 3. Fetch user profile
+    // 3. Fetch user profile — getAuthUserId returns the users _id (Id<"users">),
+    // which is what ctx.db.get needs. identity.subject is "<userId>|<sessionId>"
+    // and won't decode as a document ID.
+    const userDocId = await getAuthUserId(ctx);
+    if (!userDocId) throw new Error("Not authenticated");
     const userProfile = await ctx.runQuery(internal.letters.getUserProfile, {
-      userId: identity.subject,
+      userId: userDocId,
     });
 
     // Profile guard: all fields required for letter header (D-11)
